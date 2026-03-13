@@ -19,7 +19,7 @@ export default function Evaluator() {
     resResult(null)
 
     try {
-      const res = await fetch("http://localhost:3000/evaluate", {
+      const res = await fetch("https://flavormind-api.onrender.com/evaluate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ recipeText: recipeText })
