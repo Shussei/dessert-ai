@@ -1,6 +1,8 @@
 import { useState } from "react"
 import FlavorGraph from "../components/FlavorGraph"
 
+const API = "https://flavormind-api.onrender.com"
+
 export default function Evaluator() {
 
   const [recipeText, setRecipeText] = useState("")
@@ -19,7 +21,7 @@ export default function Evaluator() {
     resResult(null)
 
     try {
-      const res = await fetch("https://flavormind-api.onrender.com/evaluate", {
+      const res = await fetch(`${API}/evaluate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ recipeText: recipeText })
