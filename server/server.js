@@ -19,24 +19,24 @@ app.use(express.json())
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-const DATA_DIR = path.join(__dirname,"data")
-const ROLE_DB_PATH = path.join(DATA_DIR,"ingredientRoles.json")
+const DATA_DIR = path.join(__dirname, "data")
+const ROLE_DB_PATH = path.join(DATA_DIR, "ingredientRoles.json")
 
-if(!fs.existsSync(DATA_DIR)){
+if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR)
 }
 
-if(!fs.existsSync(ROLE_DB_PATH)){
-  fs.writeFileSync(ROLE_DB_PATH,"{}")
+if (!fs.existsSync(ROLE_DB_PATH)) {
+  fs.writeFileSync(ROLE_DB_PATH, "{}")
 }
 
 /* ---------------- Load Ingredient Database ---------------- */
 
 let ingredientRoles = {}
 
-try{
+try {
   ingredientRoles = JSON.parse(fs.readFileSync(ROLE_DB_PATH))
-}catch{
+} catch {
   ingredientRoles = {}
 }
 
@@ -50,7 +50,7 @@ let lastRequestTime = 0
 
 /* ---------------- Ingredient Role Classifier ---------------- */
 
-async function classifyIngredientRole(ingredient){
+async function classifyIngredientRole(ingredient) {
 
   const prompt = `
 Classify the culinary role of the ingredient.
@@ -74,9 +74,9 @@ Return ONLY the role.
 `
 
   const completion = await groq.chat.completions.create({
-    model:"openai/gpt-oss-120b",
-    messages:[{role:"user",content:prompt}],
-    temperature:0
+    model: "openai/gpt-oss-120b",
+    messages: [{ role: "user", content: prompt }],
+    temperature: 0
   })
 
   return completion.choices[0].message.content.trim().toLowerCase()
@@ -84,11 +84,11 @@ Return ONLY the role.
 
 /* ---------------- Dynamic Role Resolver ---------------- */
 
-async function getIngredientRole(ingredient){
+async function getIngredientRole(ingredient) {
 
   ingredient = ingredient.trim().toLowerCase()
 
-  if(ingredientRoles[ingredient]){
+  if (ingredientRoles[ingredient]) {
     return ingredientRoles[ingredient]
   }
 
@@ -98,7 +98,7 @@ async function getIngredientRole(ingredient){
 
   fs.writeFileSync(
     ROLE_DB_PATH,
-    JSON.stringify(ingredientRoles,null,2)
+    JSON.stringify(ingredientRoles, null, 2)
   )
 
   return role
@@ -106,17 +106,17 @@ async function getIngredientRole(ingredient){
 
 /* ---------------- Ingredient Role Analyzer ---------------- */
 
-async function analyzeIngredientRoles(recipe){
+async function analyzeIngredientRoles(recipe) {
 
   const roles = {}
 
-  for(const item of recipe){
+  for (const item of recipe) {
 
     const ingredient = item.ingredient
 
     const role = await getIngredientRole(ingredient)
 
-    if(!roles[role]) roles[role] = 0
+    if (!roles[role]) roles[role] = 0
     roles[role]++
   }
 
@@ -125,23 +125,23 @@ async function analyzeIngredientRoles(recipe){
 
 /* ---------------- Ratio Analyzer ---------------- */
 
-function analyzeRatios(recipe){
+function analyzeRatios(recipe) {
 
   let liquid = 0
   let fat = 0
   let sugar = 0
 
-  for(const item of recipe){
+  for (const item of recipe) {
 
     const qty = Number(item.quantity) || 0
 
-    if(item.unit === "ml") liquid += qty
+    if (item.unit === "ml") liquid += qty
 
-    if(item.ingredient.includes("cream") || item.ingredient.includes("butter")){
+    if (item.ingredient.includes("cream") || item.ingredient.includes("butter")) {
       fat += qty
     }
 
-    if(item.ingredient.includes("sugar")){
+    if (item.ingredient.includes("sugar")) {
       sugar += qty
     }
 
@@ -152,7 +152,7 @@ function analyzeRatios(recipe){
 
 /* ---------------- Improved Texture Engine ---------------- */
 
-function predictTexture(roles, ratios, recipe){
+function predictTexture(roles, ratios, recipe) {
 
   const textures = []
 
@@ -162,45 +162,45 @@ function predictTexture(roles, ratios, recipe){
   const thickener = roles.thickener || 0
   const protein = roles.protein || 0
 
-  if(liquid >= 1 && protein >= 1){
+  if (liquid >= 1 && protein >= 1) {
     textures.push("smooth custard-like body")
   }
 
-  if(liquid >= 1 && fat >= 1 && structure === 0){
+  if (liquid >= 1 && fat >= 1 && structure === 0) {
     textures.push("creamy pudding or mousse consistency")
   }
 
-  if(fat >= 1 && liquid >= 1){
+  if (fat >= 1 && liquid >= 1) {
     textures.push("rich velvety mouthfeel")
   }
 
-  if(structure >= 1){
+  if (structure >= 1) {
     textures.push("structured baked crumb texture")
   }
 
-  if(thickener >= 1){
+  if (thickener >= 1) {
     textures.push("gelled or thickened dessert texture")
   }
 
   /* method based influence */
 
-  for(const item of recipe){
+  for (const item of recipe) {
 
-    if(item.method === "whipped"){
+    if (item.method === "whipped") {
       textures.push("light airy structure from whipping")
     }
 
-    if(item.method === "heated"){
+    if (item.method === "heated") {
       textures.push("heat activated thickening")
     }
 
-    if(item.method === "chilled"){
+    if (item.method === "chilled") {
       textures.push("firm set texture after cooling")
     }
 
   }
 
-  if(textures.length === 0){
+  if (textures.length === 0) {
     textures.push("texture difficult to determine due to missing structural components")
   }
 
@@ -209,20 +209,20 @@ function predictTexture(roles, ratios, recipe){
 
 /* ---------------- Dessert Evaluation ---------------- */
 
-app.post("/evaluate", async (req,res)=>{
+app.post("/evaluate", async (req, res) => {
 
   console.log("Evaluation request received")
 
   const now = Date.now()
 
-  if(now - lastRequestTime < 1500){
+  if (now - lastRequestTime < 1500) {
     return res.json({
-      score:0,
-      flavorAnalysis:"Please wait before evaluating again.",
-      textureAnalysis:"",
-      creativity:"",
-      suggestions:[],
-      roles:{}
+      score: 0,
+      flavorAnalysis: "Please wait before evaluating again.",
+      textureAnalysis: "",
+      creativity: "",
+      suggestions: [],
+      roles: {}
     })
   }
 
@@ -230,11 +230,11 @@ app.post("/evaluate", async (req,res)=>{
 
   const recipeText = req.body.recipeText
 
-  if(!recipeText){
-    return res.json({error:"Recipe text missing"})
+  if (!recipeText) {
+    return res.json({ error: "Recipe text missing" })
   }
 
-  try{
+  try {
     // 1. Parse natural language into structured array
     const parsingPrompt = `
 You are a culinary data extractor. 
@@ -255,38 +255,38 @@ Return STRICT JSON ONLY. It must be an array of objects.
 ]
 `
     const parsingCompletion = await groq.chat.completions.create({
-      model:"openai/gpt-oss-120b",
-      messages:[{role:"user",content:parsingPrompt}],
-      temperature:0.1
+      model: "openai/gpt-oss-120b",
+      messages: [{ role: "user", content: parsingPrompt }],
+      temperature: 0.1
     })
 
     const parsingText = parsingCompletion.choices[0].message.content
     const parsingMatch = parsingText.match(/\[[\s\S]*\]/)
-    
-    if(!parsingMatch){
+
+    if (!parsingMatch) {
       throw new Error("Failed to parse recipe text into structured JSON")
     }
 
     const recipe = JSON.parse(parsingMatch[0])
-    
+
     // Fallback if parsing returns empty
     if (!recipe || recipe.length === 0) {
-       throw new Error("Parsed recipe is empty")
+      throw new Error("Parsed recipe is empty")
     }
 
     const ingredientText = recipe
       .map(i => `${i.ingredient} ${i.quantity}${i.unit} ${i.method}`)
       .join(", ")
 
-  try{
+    try {
 
-    const roleAnalysis = await analyzeIngredientRoles(recipe)
+      const roleAnalysis = await analyzeIngredientRoles(recipe)
 
-    const ratioData = analyzeRatios(recipe)
+      const ratioData = analyzeRatios(recipe)
 
-    const texturePrediction = predictTexture(roleAnalysis,ratioData,recipe)
+      const texturePrediction = predictTexture(roleAnalysis, ratioData, recipe)
 
-    const prompt = `
+      const prompt = `
 You are a professional pastry chef and food scientist.
 
 Evaluate the following dessert recipe.
@@ -309,62 +309,62 @@ Rules:
 - Do NOT invent ingredients
 `
 
-    const completion = await groq.chat.completions.create({
-      model:"openai/gpt-oss-120b",
-      messages:[{role:"user",content:prompt}],
-      temperature:0.3
-    })
+      const completion = await groq.chat.completions.create({
+        model: "openai/gpt-oss-120b",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.3
+      })
 
-    const text = completion.choices[0].message.content
+      const text = completion.choices[0].message.content
 
-    const jsonMatch = text.match(/\{[\s\S]*\}/)
+      const jsonMatch = text.match(/\{[\s\S]*\}/)
 
-    if(!jsonMatch){
-      throw new Error("JSON not detected")
+      if (!jsonMatch) {
+        throw new Error("JSON not detected")
+      }
+
+      const parsed = JSON.parse(jsonMatch[0])
+
+      const normalizedScore = Math.round(parsed.score / 10)
+
+      res.json({
+        score: normalizedScore,
+        flavorAnalysis: parsed.flavorAnalysis,
+        creativity: parsed.creativity,
+        suggestions: parsed.suggestions,
+        textureAnalysis: texturePrediction,
+        roles: roleAnalysis
+      })
+
+    } catch (err) {
+
+      console.log("Evaluation error:", err)
+
+      res.json({
+        score: 5,
+        flavorAnalysis: "AI evaluation failed.",
+        textureAnalysis: "Unable to evaluate texture.",
+        creativity: "Unknown",
+        suggestions: ["Check ingredient balance"],
+        roles: {}
+      })
     }
-
-    const parsed = JSON.parse(jsonMatch[0])
-
-    const normalizedScore = Math.round(parsed.score / 10)
-
-    res.json({
-      score: normalizedScore,
-      flavorAnalysis: parsed.flavorAnalysis,
-      creativity: parsed.creativity,
-      suggestions: parsed.suggestions,
-      textureAnalysis: texturePrediction,
-      roles: roleAnalysis
-    })
-
-  }catch(err){
-
-    console.log("Evaluation error:",err)
-
-    res.json({
-      score:5,
-      flavorAnalysis:"AI evaluation failed.",
-      textureAnalysis:"Unable to evaluate texture.",
-      creativity:"Unknown",
-      suggestions:["Check ingredient balance"],
-      roles:{}
-    })
+  } catch (err) {
+    console.log("Parsing error:", err)
+    res.json({ error: "Failed to parse recipe from text. Please ensure it contains ingredients." })
   }
-}catch(err){
-  console.log("Parsing error:",err)
-  res.json({error: "Failed to parse recipe from text. Please ensure it contains ingredients."})
-}
 
 })
 
 /* ---------------- Dessert Generator ---------------- */
 
-app.post("/generate", async (req,res)=>{
+app.post("/generate", async (req, res) => {
 
   console.log("Generator request received")
 
   const theme = req.body.theme
 
-  try{
+  try {
 
     const prompt = `
 You are a professional pastry chef.
@@ -387,16 +387,16 @@ Rules:
 `
 
     const completion = await groq.chat.completions.create({
-      model:"openai/gpt-oss-120b",
-      messages:[{role:"user",content:prompt}],
-      temperature:0.7
+      model: "openai/gpt-oss-120b",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.7
     })
 
     const text = completion.choices[0].message.content
 
     const jsonMatch = text.match(/\{[\s\S]*\}/)
 
-    if(!jsonMatch){
+    if (!jsonMatch) {
       throw new Error("JSON not detected")
     }
 
@@ -404,18 +404,22 @@ Rules:
 
     res.json(parsed)
 
-  }catch(err){
+  } catch (err) {
 
-    console.log("Generator error:",err)
+    console.log("Generator error:", err)
 
     res.json({
-      name:"Generation failed",
-      ingredients:[],
-      steps:[]
+      name: "Generation failed",
+      ingredients: [],
+      steps: []
     })
   }
 })
 
 /* ---------------- Start Server ---------------- */
 
-app.listen(3000,()=>console.log("AI server running with GROQ"))
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log("AI server running on port", PORT);
+});
