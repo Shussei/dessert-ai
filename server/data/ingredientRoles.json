@@ -1,0 +1,13 @@
+{
+  "milk": "liquid",
+  "cream": "fat",
+  "sugar": "sweetener",
+  "cocoa": "flavor",
+  "coffee": "flavor",
+  "chocolate": "flavor",
+  "lemon": "acid",
+  "create": "flavor",
+  "salt": "flavor",
+  "cocoa powder": "flavor",
+  "oats": "structure"
+}

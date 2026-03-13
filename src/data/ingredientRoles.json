@@ -1,0 +1,19 @@
+{
+  "sugar": "sweetener",
+  "honey": "sweetener",
+  "butter": "fat",
+  "cream": "fat",
+  "milk": "liquid",
+  "egg": "structure",
+  "flour": "structure",
+  "gelatin": "structure",
+  "cocoa": "flavor",
+  "chocolate": "flavor",
+  "vanilla": "flavor",
+  "coffee": "flavor",
+  "lemon": "acid",
+  "lime": "acid",
+  "strawberry": "fruit",
+  "banana": "fruit",
+  "mango": "fruit"
+}
