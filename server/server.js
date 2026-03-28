@@ -289,7 +289,7 @@ Return STRICT JSON ONLY. It must be an array of objects.
       const prompt = `
 You are a professional pastry chef and food scientist.
 
-Evaluate the following dessert recipe.
+Evaluate the following dessert recipe for flavor, texture, and nutritional balance.
 
 Recipe:
 ${ingredientText}
@@ -300,11 +300,14 @@ Return STRICT JSON ONLY.
 "score": number,
 "flavorAnalysis": "short paragraph",
 "creativity": "short paragraph",
-"suggestions": ["suggestion1","suggestion2"]
+"suggestions": ["suggestion1","suggestion2"],
+"healthScore": number,
+"healthySwap": "one sentence suggestion"
 }
 
 Rules:
 - Score from 0 to 100
+- healthScore from 0 to 10
 - Only use provided ingredients
 - Do NOT invent ingredients
 `
@@ -333,7 +336,9 @@ Rules:
         creativity: parsed.creativity,
         suggestions: parsed.suggestions,
         textureAnalysis: texturePrediction,
-        roles: roleAnalysis
+        roles: roleAnalysis,
+        healthScore: parsed.healthScore || 5,
+        healthySwap: parsed.healthySwap || "Focus on natural sweeteners."
       })
 
     } catch (err) {
@@ -346,6 +351,8 @@ Rules:
         textureAnalysis: "Unable to evaluate texture.",
         creativity: "Unknown",
         suggestions: ["Check ingredient balance"],
+        healthScore: 5,
+        healthySwap: "Unable to evaluate nutrition.",
         roles: {}
       })
     }
@@ -415,6 +422,7 @@ app.post("/generate", async (req, res) => {
   console.log("Generator request received")
 
   const theme = req.body.theme
+  const isHealthy = req.body.isHealthy || false
 
   try {
 
@@ -422,8 +430,9 @@ app.post("/generate", async (req, res) => {
 You are a professional pastry chef.
 
 Create a dessert recipe based on this theme:
-
 ${theme}
+
+${isHealthy ? "NOTE: This must be a HEALTHY or LOW-CALORIE version. Prioritize monk fruit, almond flour, avocado, or natural fruits." : ""}
 
 Return STRICT JSON ONLY.
 

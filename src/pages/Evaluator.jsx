@@ -57,6 +57,8 @@ export default function Evaluator() {
             creativity: data.creativity,
             suggestions: data.suggestions,
             roles: data.roles,
+            healthScore: data.healthScore,
+            healthySwap: data.healthySwap,
             createdAt: serverTimestamp(),
           })
           console.log("Successfully saved!")
@@ -245,6 +247,31 @@ Fold all components together and chill for 4 hours until firm.`)
                     </div>
 
                   )}
+
+                  {/* HEALTHY FOOD CONCEPT UI */}
+                  <div className="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 shadow-lg shadow-emerald-500/5 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-3 opacity-20 text-2xl">🍃</div>
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-emerald-400 font-bold">Health Synergy</h3>
+                      <span className="text-xs font-bold px-2 py-1 bg-emerald-500/20 text-emerald-300 rounded-full border border-emerald-500/30">
+                        {result.healthScore}/10
+                      </span>
+                    </div>
+                    
+                    <div className="w-full bg-slate-800 rounded-full h-1.5 mb-4 overflow-hidden border border-slate-700/30">
+                      <div 
+                        className="h-full bg-gradient-to-r from-emerald-600 to-teal-400 transition-all duration-1000 ease-out"
+                        style={{ width: `${(result.healthScore || 5) * 10}%` }}
+                      ></div>
+                    </div>
+
+                    <div className="bg-slate-900/50 p-3 rounded-xl border border-white/5">
+                      <p className="text-[11px] uppercase tracking-wider text-emerald-500/70 font-bold mb-1">🍰 Healthy Chef's Swap</p>
+                      <p className="text-slate-300 text-xs italic leading-relaxed">
+                        "{result.healthySwap}"
+                      </p>
+                    </div>
+                  </div>
 
                   <div className="pt-4 border-t border-slate-700/50">
 

@@ -42,6 +42,11 @@ function RecipeCard({ item, onDelete }) {
               {isFlavor ? "Flavor Lab" : isGenerated ? "Generated" : "Evaluated"}
             </span>
             {date && <span className="text-[11px] text-slate-500">{date}</span>}
+            {(item.healthScore !== undefined || item.isHealthy) && (
+              <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                🍃 {item.healthScore ? `${item.healthScore}/10` : "Healthy"}
+              </span>
+            )}
           </div>
           <h3 className="text-white font-semibold text-base leading-snug truncate">
             {item.name || item.theme || (isFlavor ? `${item.ingredient1} + ${item.ingredient2}` : "Untitled")}
@@ -133,6 +138,19 @@ function RecipeCard({ item, onDelete }) {
               </ul>
             </div>
           )}
+          {isEvaluated && item.healthySwap && (
+            <div className="bg-emerald-500/5 p-3 rounded-xl border border-emerald-500/10">
+              <p className="text-emerald-400 font-semibold mb-1 uppercase tracking-wider text-[10px] flex items-center gap-1.5">
+                🍃 Healthy Swap
+              </p>
+              <p className="text-slate-300 italic text-xs leading-relaxed">"{item.healthySwap}"</p>
+            </div>
+          )}
+          {isGenerated && item.isHealthy && (
+            <div className="bg-emerald-500/5 p-3 rounded-xl border border-emerald-500/10">
+              <p className="text-emerald-300 italic text-[11px]">This recipe was generated using Healthy Mode architecture.</p>
+            </div>
+          )}
 
           {/* Flavor Lab details */}
           {isFlavor && item.flavorAnalysis && (
@@ -156,26 +174,15 @@ export default function Library() {
 
   useEffect(() => {
     if (!user) {
-      console.log("Diagnostic: No user found in AuthContext")
       setLoading(false)
       return
     }
 
-    // --- Firebase System Check ---
-    console.log("--- Firebase System Check ---")
-    console.log("Project ID:", db.app.options.projectId)
-    console.log("Auth Domain:", db.app.options.authDomain)
-    console.log("User UID:", user.uid)
-    console.log("API Key (Start):", db.app.options.apiKey?.slice(0, 10))
-    console.log("----------------------------")
-
     const q = query(
       collection(db, "library"),
-      where("uid", "==", user.uid)
-      // orderBy("createdAt", "desc") // Temporarily disabled to check if indexing is the issue
+      where("uid", "==", user.uid),
+      orderBy("createdAt", "desc")
     )
-
-    console.log("Setting up snapshot for UID:", user.uid)
 
     const unsub = onSnapshot(q, (snap) => {
       console.log("Snapshot received! Docs:", snap.size)

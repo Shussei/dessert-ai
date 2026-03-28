@@ -8,6 +8,7 @@ const API = "https://flavormind-api.onrender.com"
 export default function Generator(){
 
   const [theme,setTheme] = useState("")
+  const [isHealthy, setIsHealthy] = useState(false)
   const [recipe,setRecipe] = useState(null)
   const [loading,setLoading] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -27,7 +28,7 @@ export default function Generator(){
       const res = await fetch(`${API}/generate`,{
         method:"POST",
         headers:{ "Content-Type":"application/json"},
-        body:JSON.stringify({theme})
+        body:JSON.stringify({ theme, isHealthy })
       })
 
       const data = await res.json()
@@ -42,6 +43,7 @@ export default function Generator(){
             type: "generated",
             name: data.name,
             theme,
+            isHealthy,
             ingredients: data.ingredients,
             steps: data.steps,
             createdAt: serverTimestamp(),
@@ -83,30 +85,47 @@ export default function Generator(){
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 mb-8">
+        <div className="flex flex-col gap-4 mb-8">
           
-          <div className="flex-1 relative group">
-            <input
-              className="w-full bg-slate-800/50 border border-slate-700 text-white placeholder-slate-500 px-6 py-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all group-hover:bg-slate-800/80 text-lg"
-              placeholder="e.g. matcha white chocolate cloud"
-              value={theme}
-              onChange={(e)=>setTheme(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && generate()}
-            />
+          <div className="flex flex-col sm:flex-row gap-4 w-full">
+            <div className="flex-1 relative group">
+              <input
+                className="w-full bg-slate-800/50 border border-slate-700 text-white placeholder-slate-500 px-6 py-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all group-hover:bg-slate-800/80 text-lg"
+                placeholder="e.g. matcha white chocolate cloud"
+                value={theme}
+                onChange={(e)=>setTheme(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && generate()}
+              />
+            </div>
+
+            <button
+              onClick={generate}
+              disabled={loading}
+              className="sm:w-32 py-4 rounded-xl bg-gradient-to-r from-indigo-600 to-emerald-600 hover:from-indigo-500 hover:to-emerald-500 text-white font-semibold text-lg hover:shadow-lg hover:shadow-indigo-500/25 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            >
+              {loading ? (
+                <svg className="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              ) : "Create"}
+            </button>
           </div>
 
-          <button
-            onClick={generate}
-            disabled={loading}
-            className="sm:w-32 py-4 rounded-xl bg-gradient-to-r from-indigo-600 to-emerald-600 hover:from-indigo-500 hover:to-emerald-500 text-white font-semibold text-lg hover:shadow-lg hover:shadow-indigo-500/25 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-          >
-            {loading ? (
-               <svg className="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-               </svg>
-            ) : "Create"}
-          </button>
+          <div className="flex items-center justify-end px-2">
+            <label className="relative inline-flex items-center cursor-pointer group">
+              <input 
+                type="checkbox" 
+                checked={isHealthy} 
+                onChange={(e) => setIsHealthy(e.target.checked)} 
+                className="sr-only peer" 
+              />
+              <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+              <span className="ml-3 text-sm font-medium text-slate-400 group-hover:text-emerald-400 transition-colors flex items-center gap-1.5">
+                🍃 Healthy Mode
+              </span>
+            </label>
+          </div>
         </div>
 
         {loading && (
