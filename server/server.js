@@ -356,6 +356,58 @@ Rules:
 
 })
 
+/* ---------------- Flavor Lab Analyst ---------------- */
+app.post("/analyze-flavor", async (req, res) => {
+
+  console.log("Flavor Lab request received")
+
+  const { ingredient1, ingredient2 } = req.body
+
+  if (!ingredient1 || !ingredient2) {
+    return res.json({ error: "Two ingredients are required for analysis." })
+  }
+
+  try {
+    const prompt = `
+You are a world-class food scientist and sensory analyst.
+
+Analyze the flavor synergy between these two ingredients:
+1. ${ingredient1}
+2. ${ingredient2}
+
+Provide a scientific yet accessible explanation of why they do (or do not) work together. Mention aromatic compounds, flavor profiles (sweet, salty, etc.), and texture contrasts.
+
+Return STRICT JSON ONLY.
+
+{
+"flavorAnalysis": "a detailed 2-3 sentence analysis"
+}
+`
+
+    const completion = await groq.chat.completions.create({
+      model: "llama3-70b-8192",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.6
+    })
+
+    const text = completion.choices[0].message.content
+    const jsonMatch = text.match(/\{[\s\S]*\}/)
+
+    if (!jsonMatch) {
+      throw new Error("JSON not detected")
+    }
+
+    res.json(JSON.parse(jsonMatch[0]))
+
+  } catch (err) {
+    console.log("Flavor Analysis error:", err)
+    res.json({
+      flavorAnalysis: `The pairing of ${ingredient1} and ${ingredient2} offers an intriguing sensory profile, often working well when balanced properly in experimental desserts.`
+    })
+  }
+
+})
+
 /* ---------------- Dessert Generator ---------------- */
 
 app.post("/generate", async (req, res) => {

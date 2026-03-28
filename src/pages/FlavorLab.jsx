@@ -25,11 +25,12 @@ export default function FlavorLab(){
     setResult(null)
 
     try {
-      const res = await fetch(`${API}/evaluate`,{
+      const res = await fetch(`${API}/analyze-flavor`,{
         method:"POST",
         headers:{ "Content-Type":"application/json"},
         body: JSON.stringify({
-          recipeText: `${ingredient1} and ${ingredient2}`
+          ingredient1,
+          ingredient2
         })
       })
 
