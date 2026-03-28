@@ -36,6 +36,7 @@ export default function Generator(){
       // Save to user's personal library
       if (user && data && data.name) {
         try {
+          console.log("Saving generated recipe to Firestore...")
           await addDoc(collection(db, "library"), {
             uid: user.uid,
             type: "generated",
@@ -45,10 +46,11 @@ export default function Generator(){
             steps: data.steps,
             createdAt: serverTimestamp(),
           })
+          console.log("Successfully saved!")
           setSaved(true)
           setTimeout(() => setSaved(false), 3000)
         } catch (e) {
-          console.warn("Library save failed:", e)
+          console.error("Library save failed (catch):", e)
         }
       }
 

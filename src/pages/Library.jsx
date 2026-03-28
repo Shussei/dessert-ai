@@ -162,12 +162,18 @@ export default function Library() {
 
     const q = query(
       collection(db, "library"),
-      where("uid", "==", user.uid),
-      orderBy("createdAt", "desc")
+      where("uid", "==", user.uid)
+      // orderBy("createdAt", "desc") // Temporarily disabled to check if indexing is the issue
     )
 
+    console.log("Setting up snapshot for UID:", user.uid)
+
     const unsub = onSnapshot(q, (snap) => {
+      console.log("Snapshot received! Docs:", snap.size)
       setItems(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+      setLoading(false)
+    }, (err) => {
+      console.error("Firestore error in Library:", err)
       setLoading(false)
     })
 

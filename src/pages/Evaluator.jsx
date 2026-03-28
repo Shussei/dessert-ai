@@ -45,6 +45,7 @@ export default function Evaluator() {
       if (user && data && !data.error) {
         try {
           const recipeName = recipeText.split("\n")[0].trim().slice(0, 80) || "Evaluated Recipe"
+          console.log("Saving recipe to Firestore...")
           await addDoc(collection(db, "library"), {
             uid: user.uid,
             type: "evaluated",
@@ -58,10 +59,11 @@ export default function Evaluator() {
             roles: data.roles,
             createdAt: serverTimestamp(),
           })
+          console.log("Successfully saved!")
           setSaved(true)
           setTimeout(() => setSaved(false), 3000)
         } catch (e) {
-          console.warn("Library save failed:", e)
+          console.error("Library save failed (catch):", e)
         }
       }
 

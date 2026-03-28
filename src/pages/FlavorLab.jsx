@@ -39,6 +39,7 @@ export default function FlavorLab(){
       // Save to user's personal library
       if (user && data && data.flavorAnalysis) {
         try {
+          console.log("Saving flavor analysis to Firestore...")
           await addDoc(collection(db, "library"), {
             uid: user.uid,
             type: "flavor",
@@ -47,10 +48,11 @@ export default function FlavorLab(){
             flavorAnalysis: data.flavorAnalysis,
             createdAt: serverTimestamp(),
           })
+          console.log("Successfully saved!")
           setSaved(true)
           setTimeout(() => setSaved(false), 3000)
         } catch (e) {
-          console.warn("Library save failed:", e)
+          console.error("Library save failed (catch):", e)
         }
       }
     } catch(err) {
