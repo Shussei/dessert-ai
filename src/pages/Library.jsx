@@ -156,9 +156,18 @@ export default function Library() {
 
   useEffect(() => {
     if (!user) {
+      console.log("Diagnostic: No user found in AuthContext")
       setLoading(false)
       return
     }
+
+    // --- Firebase System Check ---
+    console.log("--- Firebase System Check ---")
+    console.log("Project ID:", db.app.options.projectId)
+    console.log("Auth Domain:", db.app.options.authDomain)
+    console.log("User UID:", user.uid)
+    console.log("API Key (Start):", db.app.options.apiKey?.slice(0, 10))
+    console.log("----------------------------")
 
     const q = query(
       collection(db, "library"),
