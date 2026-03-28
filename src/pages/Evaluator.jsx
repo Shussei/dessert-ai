@@ -1,5 +1,8 @@
 import { useState } from "react"
 import FlavorGraph from "../components/FlavorGraph"
+import { collection, addDoc, serverTimestamp } from "firebase/firestore"
+import { db } from "../firebase"
+import { useAuth } from "../context/AuthContext"
 
 const API = "https://flavormind-api.onrender.com"
 
@@ -8,6 +11,8 @@ export default function Evaluator() {
   const [recipeText, setRecipeText] = useState("")
   const [result, resResult] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const { user } = useAuth()
 
   async function evaluate() {
 
@@ -36,6 +41,30 @@ export default function Evaluator() {
 
       resResult(data)
 
+      // Save to user's personal library
+      if (user && data && !data.error) {
+        try {
+          const recipeName = recipeText.split("\n")[0].trim().slice(0, 80) || "Evaluated Recipe"
+          await addDoc(collection(db, "library"), {
+            uid: user.uid,
+            type: "evaluated",
+            name: recipeName,
+            recipeText,
+            score: data.score,
+            flavorAnalysis: data.flavorAnalysis,
+            textureAnalysis: data.textureAnalysis,
+            creativity: data.creativity,
+            suggestions: data.suggestions,
+            roles: data.roles,
+            createdAt: serverTimestamp(),
+          })
+          setSaved(true)
+          setTimeout(() => setSaved(false), 3000)
+        } catch (e) {
+          console.warn("Library save failed:", e)
+        }
+      }
+
     } catch (err) {
       console.error(err)
       alert("Failed to evaluate. Ensure server is running.")
@@ -47,6 +76,7 @@ export default function Evaluator() {
   function reset() {
     setRecipeText("")
     resResult(null)
+    setSaved(false)
   }
 
   function loadExample() {

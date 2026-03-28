@@ -1,10 +1,17 @@
 import { useState } from "react"
+import { collection, addDoc, serverTimestamp } from "firebase/firestore"
+import { db } from "../firebase"
+import { useAuth } from "../context/AuthContext"
+
+const API = "https://flavormind-api.onrender.com"
 
 export default function Generator(){
 
   const [theme,setTheme] = useState("")
   const [recipe,setRecipe] = useState(null)
   const [loading,setLoading] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const { user } = useAuth()
 
   async function generate(){
 
@@ -17,7 +24,7 @@ export default function Generator(){
     setRecipe(null)
 
     try {
-      const res = await fetch("http://localhost:3000/generate",{
+      const res = await fetch(`${API}/generate`,{
         method:"POST",
         headers:{ "Content-Type":"application/json"},
         body:JSON.stringify({theme})
@@ -25,6 +32,25 @@ export default function Generator(){
 
       const data = await res.json()
       setRecipe(data)
+
+      // Save to user's personal library
+      if (user && data && data.name) {
+        try {
+          await addDoc(collection(db, "library"), {
+            uid: user.uid,
+            type: "generated",
+            name: data.name,
+            theme,
+            ingredients: data.ingredients,
+            steps: data.steps,
+            createdAt: serverTimestamp(),
+          })
+          setSaved(true)
+          setTimeout(() => setSaved(false), 3000)
+        } catch (e) {
+          console.warn("Library save failed:", e)
+        }
+      }
 
     } catch(err) {
       console.error(err)

@@ -1,4 +1,9 @@
 import { useState } from "react"
+import { collection, addDoc, serverTimestamp } from "firebase/firestore"
+import { db } from "../firebase"
+import { useAuth } from "../context/AuthContext"
+
+const API = "https://flavormind-api.onrender.com"
 
 export default function FlavorLab(){
 
@@ -6,6 +11,8 @@ export default function FlavorLab(){
   const [ingredient2,setIngredient2] = useState("")
   const [result,setResult] = useState(null)
   const [loading,setLoading] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const { user } = useAuth()
 
   async function analyze(){
 
@@ -18,20 +25,34 @@ export default function FlavorLab(){
     setResult(null)
 
     try {
-      const res = await fetch("http://localhost:3000/evaluate",{
+      const res = await fetch(`${API}/evaluate`,{
         method:"POST",
         headers:{ "Content-Type":"application/json"},
-        // FIX: The server expects an array of recipe items, each with an 'ingredient' field
         body: JSON.stringify({
-          recipe: [
-            { ingredient: ingredient1 },
-            { ingredient: ingredient2 }
-          ]
+          recipeText: `${ingredient1} and ${ingredient2}`
         })
       })
 
       const data = await res.json()
       setResult(data)
+
+      // Save to user's personal library
+      if (user && data && data.flavorAnalysis) {
+        try {
+          await addDoc(collection(db, "library"), {
+            uid: user.uid,
+            type: "flavor",
+            ingredient1,
+            ingredient2,
+            flavorAnalysis: data.flavorAnalysis,
+            createdAt: serverTimestamp(),
+          })
+          setSaved(true)
+          setTimeout(() => setSaved(false), 3000)
+        } catch (e) {
+          console.warn("Library save failed:", e)
+        }
+      }
     } catch(err) {
       console.error(err)
       alert("Failed to analyze.")

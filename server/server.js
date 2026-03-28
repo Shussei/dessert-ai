@@ -74,7 +74,7 @@ Return ONLY the role.
 `
 
   const completion = await groq.chat.completions.create({
-    model: "openai/gpt-oss-120b",
+    model: "llama3-70b-8192",
     messages: [{ role: "user", content: prompt }],
     temperature: 0
   })
@@ -255,7 +255,7 @@ Return STRICT JSON ONLY. It must be an array of objects.
 ]
 `
     const parsingCompletion = await groq.chat.completions.create({
-      model: "openai/gpt-oss-120b",
+      model: "llama3-70b-8192",
       messages: [{ role: "user", content: parsingPrompt }],
       temperature: 0.1
     })
@@ -310,7 +310,7 @@ Rules:
 `
 
       const completion = await groq.chat.completions.create({
-        model: "openai/gpt-oss-120b",
+        model: "llama3-70b-8192",
         messages: [{ role: "user", content: prompt }],
         temperature: 0.3
       })
@@ -387,7 +387,7 @@ Rules:
 `
 
     const completion = await groq.chat.completions.create({
-      model: "openai/gpt-oss-120b",
+      model: "llama3-70b-8192",
       messages: [{ role: "user", content: prompt }],
       temperature: 0.7
     })
