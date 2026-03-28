@@ -130,9 +130,19 @@ export default function FlavorLab(){
               <h3 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
                 <span className="text-purple-400">✧</span> Analysis Result
               </h3>
-              <p className="text-slate-300 leading-relaxed text-sm sm:text-base">
-                {result.flavorAnalysis}
-              </p>
+              {result.error ? (
+                <p className="text-red-400 font-medium">
+                  Error: {result.error}
+                </p>
+              ) : result.flavorAnalysis ? (
+                <p className="text-slate-300 leading-relaxed text-sm sm:text-base">
+                  {result.flavorAnalysis}
+                </p>
+              ) : (
+                <p className="text-slate-400 italic">
+                  AI analysis is being processed... if it doesn't appear, please check your server logs.
+                </p>
+              )}
             </div>
           </div>
         )}
