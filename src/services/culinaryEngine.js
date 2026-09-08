@@ -1,6 +1,6 @@
 import { metrics } from "../components/SystemMetricsWidget"
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000"
+const API_BASE = import.meta.env.VITE_API_URL || ""
 
 async function apiRequest(endpoint, body, timeoutMs = 35000) {
   const controller = new AbortController()

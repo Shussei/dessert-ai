@@ -2,17 +2,24 @@ import express from "express"
 import cors from "cors"
 import dotenv from "dotenv"
 import Groq from "groq-sdk"
+import fs from "fs"
+import path from "path"
+import { fileURLToPath } from "url"
 
 dotenv.config({ override: true })
 
 const app = express()
 
 const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(",")
-  : ["http://localhost:5173", "http://localhost:3000"]
+  ? process.env.ALLOWED_ORIGINS.split(",").map((s) => s.trim())
+  : null
 
 app.use(cors({
   origin: (origin, cb) => {
+    if (!ALLOWED_ORIGINS) {
+      // No explicit allowlist configured: same-origin and tool-based requests pass.
+      return cb(null, true)
+    }
     if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true)
     cb(new Error("Not allowed by CORS"))
   },
@@ -391,6 +398,20 @@ Be technically responsible. Do not make health or medical claims.`
 app.get("/logs", (_req, res) => {
   res.json({ logs: REQUEST_LOG.slice(-50) })
 })
+
+// ── STATIC FRONTEND (production build) ──
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const DIST_DIR = path.join(__dirname, "..", "dist")
+
+if (fs.existsSync(DIST_DIR)) {
+  app.use(express.static(DIST_DIR))
+  app.get(/^\/(?!evaluate|analyze-flavor|generate|reformulate|health|logs).*/, (_req, res) => {
+    res.sendFile(path.join(DIST_DIR, "index.html"))
+  })
+  console.log("[SavorSense] Serving frontend from dist/")
+} else {
+  console.warn("[SavorSense] No dist/ build found — run `npm run build` to serve the UI from this server.")
+}
 
 // ── ERROR HANDLING ──
 app.use((err, _req, res, _next) => {
