@@ -2,21 +2,23 @@ import { Link, useLocation, useNavigate } from "react-router-dom"
 import { useState } from "react"
 import { useAuth } from "../context/AuthContext"
 
-export default function Navbar() {
+const NAV_LINKS = [
+  { to: "/evaluator", label: "Evaluator" },
+  { to: "/flavorlab", label: "Flavor Lab" },
+  { to: "/reformulate", label: "Reformulate" },
+  { to: "/compare", label: "Compare" },
+  { to: "/generator", label: "Generator" },
+  { to: "/library", label: "Library" },
+  { to: "/about", label: "About" },
+]
 
+export default function Navbar() {
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
   const { user, logout } = useAuth()
   const navigate = useNavigate()
 
-  const getLinkClass = (path) => {
-    const isActive = location.pathname === path
-
-    return `transition-colors duration-200 text-sm font-medium ${isActive
-        ? "text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400"
-        : "text-slate-300 hover:text-white"
-      }`
-  }
+  const isActive = (path) => location.pathname === path
 
   async function handleLogout() {
     await logout()
@@ -25,107 +27,117 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="sticky top-0 z-50 w-full backdrop-blur-md bg-slate-950/80 border-b border-white/10">
+    <nav className="sticky top-0 z-50 w-full bg-cream-50/95 backdrop-blur-md border-b border-cream-300">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="flex items-center justify-between h-16">
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+          {/* Logo + Brand */}
+          <Link to="/" className="flex items-center gap-2.5 group shrink-0">
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-chocolate-700 to-chocolate-800 flex items-center justify-center text-cream-100 font-display font-bold text-lg shadow-warm group-hover:opacity-90 transition-opacity">
+              S
+            </div>
+            <div className="flex flex-col leading-none">
+              <span className="text-base font-display font-bold text-chocolate-900 tracking-tight">SavorSense</span>
+              <span className="text-[9px] text-caramel-600 font-semibold tracking-wider hidden sm:block">
+                AI Culinary Intelligence
+              </span>
+            </div>
+          </Link>
 
-        {/* Logo */}
-        <div className="flex items-center gap-3">
-
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-pink-500/20">
-            F
+          {/* Desktop Nav */}
+          <div className="hidden lg:flex items-center gap-1">
+            {NAV_LINKS.map(({ to, label }) => (
+              <Link
+                key={to}
+                to={to}
+                aria-current={isActive(to) ? "page" : undefined}
+                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-150 ${
+                  isActive(to)
+                    ? "bg-chocolate-800 text-cream-100"
+                    : "text-chocolate-500 hover:text-chocolate-900 hover:bg-cream-200/60"
+                }`}
+              >
+                {label}
+              </Link>
+            ))}
           </div>
 
-          <h2 className="hidden sm:block text-lg sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400 tracking-tight">
-            FlavorMind AI
-          </h2>
-
-        </div>
-
-        {/* Desktop Menu */}
-        <div className="hidden md:flex items-center gap-6">
-
-          <Link className={getLinkClass("/")} to="/">Home</Link>
-          <Link className={getLinkClass("/evaluator")} to="/evaluator">Evaluator</Link>
-          <Link className={getLinkClass("/flavorlab")} to="/flavorlab">Flavor Lab</Link>
-          <Link className={getLinkClass("/generator")} to="/generator">Generator</Link>
-          <Link className={getLinkClass("/library")} to="/library">Library</Link>
-          <Link className={getLinkClass("/about")} to="/about">About</Link>
-
-          {user ? (
-            <div className="flex items-center gap-3 ml-2 pl-4 border-l border-white/10">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold">
+          {/* Auth */}
+          <div className="flex items-center gap-2 shrink-0">
+            {user ? (
+              <div className="hidden lg:flex items-center gap-2 pl-2 border-l border-cream-300">
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-dustyrose-500 to-chocolate-700 flex items-center justify-center text-cream-50 text-[11px] font-bold shrink-0">
                   {(user.displayName || user.email || "U")[0].toUpperCase()}
                 </div>
-                <span className="text-slate-300 text-sm max-w-[100px] truncate">
-                  {user.displayName || user.email}
-                </span>
+                <button
+                  onClick={handleLogout}
+                  className="text-[11px] px-2.5 py-1.5 rounded-lg bg-cream-200 hover:bg-cream-300 border border-cream-300 text-chocolate-600 hover:text-chocolate-900 transition-all"
+                >
+                  Sign out
+                </button>
               </div>
-              <button
-                onClick={handleLogout}
-                className="text-xs px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition-all"
+            ) : (
+              <Link
+                to="/auth"
+                className="hidden lg:block px-4 py-2 rounded-lg bg-chocolate-800 hover:bg-chocolate-700 text-cream-100 text-xs font-semibold shadow-warm transition-all"
               >
-                Sign out
-              </button>
-            </div>
-          ) : (
-            <Link
-              to="/auth"
-              className="ml-2 px-4 py-2 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white text-sm font-semibold shadow-lg shadow-pink-500/20 transition-all"
+                Sign In
+              </Link>
+            )}
+
+            {/* Mobile Hamburger */}
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              aria-label="Toggle navigation menu"
+              aria-expanded={menuOpen}
+              className="lg:hidden w-9 h-9 flex items-center justify-center rounded-lg bg-cream-100 border border-cream-300 text-chocolate-700 text-lg"
             >
-              Sign in
-            </Link>
-          )}
-
+              {menuOpen ? "✕" : "☰"}
+            </button>
+          </div>
         </div>
-
-        {/* Mobile Hamburger */}
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          className="md:hidden text-slate-200 text-2xl"
-        >
-          ☰
-        </button>
-
       </div>
 
       {/* Mobile Menu */}
       {menuOpen && (
+        <div className="lg:hidden border-t border-cream-300 bg-cream-50 animate-slide-down">
+          <div className="max-w-7xl mx-auto px-4 py-3 grid grid-cols-2 gap-1">
+            {NAV_LINKS.map(({ to, label }) => (
+              <Link
+                key={to}
+                to={to}
+                onClick={() => setMenuOpen(false)}
+                className={`px-3 py-2.5 rounded-md text-xs font-semibold transition-all ${
+                  isActive(to)
+                    ? "bg-chocolate-800 text-cream-100"
+                    : "text-chocolate-500 hover:text-chocolate-900 hover:bg-cream-200"
+                }`}
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
 
-        <div className="md:hidden flex flex-col gap-4 px-6 pb-6 pt-2 bg-slate-950/95 border-t border-white/10">
-
-          <Link onClick={() => setMenuOpen(false)} className={getLinkClass("/")} to="/">Home</Link>
-          <Link onClick={() => setMenuOpen(false)} className={getLinkClass("/evaluator")} to="/evaluator">Evaluator</Link>
-          <Link onClick={() => setMenuOpen(false)} className={getLinkClass("/flavorlab")} to="/flavorlab">Flavor Lab</Link>
-          <Link onClick={() => setMenuOpen(false)} className={getLinkClass("/generator")} to="/generator">Generator</Link>
-          <Link onClick={() => setMenuOpen(false)} className={getLinkClass("/library")} to="/library">Library</Link>
-          <Link onClick={() => setMenuOpen(false)} className={getLinkClass("/about")} to="/about">About</Link>
-
-          {user ? (
-            <div className="pt-3 border-t border-white/10">
-              <p className="text-slate-400 text-xs mb-2">Signed in as <span className="text-white">{user.displayName || user.email}</span></p>
+          <div className="px-4 pb-3 pt-1 border-t border-cream-300 flex items-center justify-between gap-3">
+            {user ? (
               <button
                 onClick={handleLogout}
-                className="w-full text-sm px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition-all text-left"
+                className="text-xs px-3 py-1.5 rounded-lg bg-cream-200 border border-cream-300 text-chocolate-600"
               >
                 Sign out
               </button>
-            </div>
-          ) : (
-            <Link
-              to="/auth"
-              onClick={() => setMenuOpen(false)}
-              className="mt-2 px-4 py-3 rounded-xl bg-gradient-to-r from-pink-600 to-purple-600 text-white text-sm font-semibold text-center"
-            >
-              Sign in / Sign up
-            </Link>
-          )}
-
+            ) : (
+              <Link
+                to="/auth"
+                onClick={() => setMenuOpen(false)}
+                className="text-xs px-3 py-1.5 rounded-lg bg-chocolate-800 text-cream-100"
+              >
+                Sign In
+              </Link>
+            )}
+          </div>
         </div>
-
       )}
-
     </nav>
   )
 }
