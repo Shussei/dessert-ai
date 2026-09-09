@@ -27,31 +27,36 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="sticky top-0 z-50 w-full bg-cream-50/95 backdrop-blur-md border-b border-cream-300">
+    <nav className="sticky top-0 z-50 w-full bg-cream-50 border-b-[3px] border-chocolate-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-16">
 
           {/* Logo + Brand */}
-          <Link to="/" className="flex items-baseline gap-2.5 group shrink-0">
-            <span className="font-display text-xl font-semibold tracking-tight text-chocolate-900 group-hover:text-saffron-600 transition-colors">
-              SavorSense
+          <Link to="/" className="flex items-center gap-2.5 group shrink-0">
+            <span className="w-9 h-9 checker rounded-sm border-2 border-chocolate-900 grid place-items-center font-display font-extrabold text-chocolate-900 text-base leading-none group-hover:rotate-3 transition-transform duration-150">
+              S
             </span>
-            <span className="text-[9px] text-chocolate-400 font-mono font-medium uppercase tracking-widest hidden sm:inline">
-              MUMENT 2026
+            <span className="flex flex-col leading-none">
+              <span className="font-display text-xl font-extrabold tracking-tight text-chocolate-900">
+                SavorSense
+              </span>
+              <span className="text-[9px] text-chocolate-400 font-mono font-medium uppercase tracking-[0.2em] hidden sm:block">
+                MUMENT 2026
+              </span>
             </span>
           </Link>
 
           {/* Desktop Nav */}
-          <div className="hidden lg:flex items-center gap-0 h-16">
+          <div className="hidden lg:flex items-center gap-1">
             {NAV_LINKS.map(({ to, label }) => (
               <Link
                 key={to}
                 to={to}
                 aria-current={isActive(to) ? "page" : undefined}
-                className={`px-3 py-1.5 text-xs font-medium uppercase tracking-wider transition-colors duration-150 border-b-2 ${
+                className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-all duration-100 border-2 ${
                   isActive(to)
-                    ? "text-chocolate-900 border-saffron-500"
-                    : "text-chocolate-400 border-transparent hover:text-chocolate-900"
+                    ? "bg-chocolate-900 text-cream-100 border-chocolate-900 shadow-warm"
+                    : "bg-transparent text-chocolate-500 border-transparent hover:text-chocolate-900 hover:bg-saffron-100 hover:border-chocolate-900"
                 }`}
               >
                 {label}
@@ -62,13 +67,13 @@ export default function Navbar() {
           {/* Auth */}
           <div className="flex items-center gap-2 shrink-0">
             {user ? (
-              <div className="hidden lg:flex items-center gap-2 pl-2 border-l border-cream-300">
-                <div className="w-7 h-7 rounded-full bg-chocolate-900 flex items-center justify-center text-cream-100 text-[11px] font-bold shrink-0">
+              <div className="hidden lg:flex items-center gap-2 pl-2 border-l-2 border-chocolate-200">
+                <div className="w-8 h-8 rounded-sm bg-chocolate-900 flex items-center justify-center text-cream-100 text-[11px] font-bold shrink-0">
                   {(user.displayName || user.email || "U")[0].toUpperCase()}
                 </div>
                 <button
                   onClick={handleLogout}
-                  className="text-[11px] px-2.5 py-1.5 rounded-md bg-transparent hover:bg-cream-200 border border-cream-300 text-chocolate-600 hover:text-chocolate-900 transition-all"
+                  className="text-[11px] px-2.5 py-1.5 rounded-md bg-transparent hover:bg-cream-200 border-2 border-chocolate-300 text-chocolate-600 hover:text-chocolate-900 transition-all"
                 >
                   Sign out
                 </button>
@@ -76,7 +81,7 @@ export default function Navbar() {
             ) : (
               <Link
                 to="/auth"
-                className="hidden lg:block px-4 py-2 rounded-md bg-saffron-500 hover:bg-saffron-400 text-chocolate-900 text-xs font-semibold transition-all active:scale-[0.97]"
+                className="hidden lg:block px-4 py-2 rounded-md bg-saffron-400 hover:bg-saffron-300 border-2 border-chocolate-900 text-chocolate-900 text-xs font-bold shadow-warm transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
               >
                 Sign In
               </Link>
@@ -87,9 +92,9 @@ export default function Navbar() {
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label="Toggle navigation menu"
               aria-expanded={menuOpen}
-              className="lg:hidden w-9 h-9 flex items-center justify-center rounded-md bg-cream-100 border border-cream-300 text-chocolate-700 text-lg"
+              className="lg:hidden w-10 h-10 flex items-center justify-center rounded-sm bg-cream-100 border-2 border-chocolate-900 text-chocolate-800 text-lg shadow-warm"
             >
-              {menuOpen ? "✕" : "☰"}
+              {menuOpen ? "✕" : "≡"}
             </button>
           </div>
         </div>
@@ -97,17 +102,17 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {menuOpen && (
-        <div className="lg:hidden border-t border-cream-300 bg-cream-50 animate-slide-down">
-          <div className="max-w-7xl mx-auto px-4 py-3 grid grid-cols-2 gap-1">
+        <div className="lg:hidden border-t-[3px] border-chocolate-900 bg-cream-50 animate-slide-down">
+          <div className="max-w-7xl mx-auto px-4 py-3 grid grid-cols-1 gap-2">
             {NAV_LINKS.map(({ to, label }) => (
               <Link
                 key={to}
                 to={to}
                 onClick={() => setMenuOpen(false)}
-                className={`px-3 py-2.5 rounded-md text-xs font-medium uppercase tracking-wider transition-all ${
+                className={`px-3 py-2.5 rounded-md text-xs font-bold uppercase tracking-wider transition-all border-2 ${
                   isActive(to)
-                    ? "bg-chocolate-900 text-cream-100"
-                    : "text-chocolate-500 hover:text-chocolate-900 hover:bg-cream-200"
+                    ? "bg-chocolate-900 text-cream-100 border-chocolate-900"
+                    : "bg-white text-chocolate-600 border-cream-300 hover:border-chocolate-900"
                 }`}
               >
                 {label}
@@ -115,11 +120,11 @@ export default function Navbar() {
             ))}
           </div>
 
-          <div className="px-4 pb-3 pt-1 border-t border-cream-300 flex items-center justify-between gap-3">
+          <div className="px-4 pb-3 pt-2 border-t-2 border-cream-200 flex items-center justify-between gap-3">
             {user ? (
               <button
                 onClick={handleLogout}
-                className="text-xs px-3 py-1.5 rounded-md bg-cream-200 border border-cream-300 text-chocolate-600"
+                className="text-xs px-3 py-1.5 rounded-md bg-cream-200 border-2 border-chocolate-300 text-chocolate-600"
               >
                 Sign out
               </button>
@@ -127,7 +132,7 @@ export default function Navbar() {
               <Link
                 to="/auth"
                 onClick={() => setMenuOpen(false)}
-                className="text-xs px-3 py-1.5 rounded-md bg-saffron-500 text-chocolate-900 font-semibold"
+                className="text-xs px-3 py-1.5 rounded-md bg-saffron-400 border-2 border-chocolate-900 text-chocolate-900 font-bold"
               >
                 Sign In
               </Link>

@@ -60,26 +60,50 @@ export default function ExpoKiosk() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
+      {/* Ticker */}
+      <div className="overflow-hidden border-2 border-chocolate-900 bg-chocolate-900 text-saffron-300 py-1 ticker-mask" aria-hidden="true">
+        <div className="flex whitespace-nowrap animate-marquee">
+          {[0, 1].map((n) => (
+            <span key={n} className="flex shrink-0 items-center">
+              {["SENSORY ANALYSIS", "STRUCTURAL BLUEPRINT", "FLAVOR PAIRING", "ZERO FABRICATION", "MUMENT 2026"].map((t) => (
+                <span key={t + n} className="font-mono text-[11px] font-semibold uppercase tracking-[0.25em]">
+                  {t}
+                  <span className="mx-5 text-cream-100">●</span>
+                </span>
+              ))}
+            </span>
+          ))}
+        </div>
+      </div>
+
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <span className="badge-warm">Live Demonstration</span>
           <span className="text-xs text-chocolate-400 font-mono">MUMENT 2026 Expo · Team NSSN</span>
         </div>
-        <span className="px-3 py-1 rounded-full bg-dustyrose-50 border border-dustyrose-200 text-dustyrose-600 text-[11px] font-bold uppercase tracking-wider">
+        <span className="px-3 py-1 rounded-sm bg-dustyrose-100 border-2 border-chocolate-900 text-dustyrose-600 text-[11px] font-bold uppercase tracking-wider">
           Demo Mode
         </span>
       </div>
 
       <header className="text-center animate-fade-in-up py-4">
-        <h1 className="font-display text-4xl sm:text-6xl lg:text-7xl font-semibold text-chocolate-900 tracking-tight leading-none">
-          SavorSense
+        <div className="inline-flex items-center gap-3 mb-4">
+          <span className="w-7 h-7 checker rounded-sm border-2 border-chocolate-900 grid place-items-center font-display font-extrabold text-chocolate-900 text-sm leading-none">
+            S
+          </span>
+          <p className="font-mono text-[11px] text-saffron-600 font-bold uppercase tracking-[0.3em]">
+            AI Culinary Intelligence
+          </p>
+        </div>
+        <h1 className="font-display text-5xl sm:text-7xl font-extrabold text-chocolate-900 tracking-tight leading-none">
+          SavorSense<span className="text-saffron-600">.</span>
         </h1>
-        <p className="font-display text-lg sm:text-2xl text-caramel-600 mt-2">
-          — AI Culinary Intelligence —
-        </p>
-        <p className="text-chocolate-500 max-w-2xl mx-auto mt-4 text-sm sm:text-base leading-relaxed">
+        <p className="text-chocolate-500 max-w-2xl mx-auto mt-5 text-sm sm:text-base leading-relaxed">
           Paste any dessert recipe. The engine deconstructs it into structural layers, sensory dimensions, and strengths.
         </p>
+        <span className="mt-5 inline-block -rotate-1 bg-saffron-300 border-2 border-chocolate-900 px-3 py-1 rounded-sm font-mono text-[10px] font-bold uppercase tracking-widest text-chocolate-900">
+          Zero fabricated scores
+        </span>
       </header>
 
       <div className="card-warm p-6 sm:p-8">
@@ -147,17 +171,17 @@ export default function ExpoKiosk() {
             {result.servingInfo && (
               <div className="flex flex-wrap gap-2 mt-4">
                 {result.servingInfo.temperature && (
-                  <span className="px-3 py-1 rounded-full bg-cream-200 border border-cream-300 text-chocolate-600 text-xs font-semibold">
+                  <span className="px-3 py-1 rounded-sm bg-cream-100 border-2 border-cream-300 text-chocolate-600 text-xs font-semibold">
                     Serve at {result.servingInfo.temperature}
                   </span>
                 )}
                 {result.servingInfo.shelfStability && (
-                  <span className="px-3 py-1 rounded-full bg-cream-200 border border-cream-300 text-chocolate-600 text-xs font-semibold">
+                  <span className="px-3 py-1 rounded-sm bg-cream-100 border-2 border-cream-300 text-chocolate-600 text-xs font-semibold">
                     {result.servingInfo.shelfStability}
                   </span>
                 )}
                 {result.servingInfo.difficulty && (
-                  <span className="px-3 py-1 rounded-full bg-caramel-100 border border-caramel-300 text-caramel-700 text-xs font-semibold uppercase">
+                  <span className="px-3 py-1 rounded-sm bg-caramel-100 border-2 border-caramel-300 text-caramel-700 text-xs font-semibold uppercase">
                     {result.servingInfo.difficulty}
                   </span>
                 )}

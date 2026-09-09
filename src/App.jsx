@@ -36,14 +36,14 @@ export default function App() {
             </Routes>
           </main>
 
-          <footer className="w-full mt-20 border-t border-cream-300 bg-cream-50/80">
+          <footer className="w-full mt-20 border-t-[3px] border-chocolate-900 bg-cream-50">
             <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between text-chocolate-400 text-xs font-mono">
               <p>
                 © {new Date().getFullYear()} SavorSense — AI Culinary Intelligence
               </p>
               <div className="flex items-center gap-4 mt-3 sm:mt-0">
                 <span className="text-caramel-600">Culinary R&D Platform</span>
-                <span aria-hidden="true">•</span>
+                <span aria-hidden="true">●</span>
                 <a href="mailto:natalmadekkal.2005@gmail.com" className="hover:text-chocolate-900 transition">
                   Contact Team
                 </a>
