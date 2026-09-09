@@ -32,29 +32,26 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
 
           {/* Logo + Brand */}
-          <Link to="/" className="flex items-center gap-2.5 group shrink-0">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-chocolate-700 to-chocolate-800 flex items-center justify-center text-cream-100 font-display font-bold text-lg shadow-warm group-hover:opacity-90 transition-opacity">
-              S
-            </div>
-            <div className="flex flex-col leading-none">
-              <span className="text-base font-display font-bold text-chocolate-900 tracking-tight">SavorSense</span>
-              <span className="text-[9px] text-caramel-600 font-semibold tracking-wider hidden sm:block">
-                AI Culinary Intelligence
-              </span>
-            </div>
+          <Link to="/" className="flex items-baseline gap-2.5 group shrink-0">
+            <span className="font-display text-xl font-semibold tracking-tight text-chocolate-900 group-hover:text-saffron-600 transition-colors">
+              SavorSense
+            </span>
+            <span className="text-[9px] text-chocolate-400 font-mono font-medium uppercase tracking-widest hidden sm:inline">
+              MUMENT 2026
+            </span>
           </Link>
 
           {/* Desktop Nav */}
-          <div className="hidden lg:flex items-center gap-1">
+          <div className="hidden lg:flex items-center gap-0 h-16">
             {NAV_LINKS.map(({ to, label }) => (
               <Link
                 key={to}
                 to={to}
                 aria-current={isActive(to) ? "page" : undefined}
-                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all duration-150 ${
+                className={`px-3 py-1.5 text-xs font-medium uppercase tracking-wider transition-colors duration-150 border-b-2 ${
                   isActive(to)
-                    ? "bg-chocolate-800 text-cream-100"
-                    : "text-chocolate-500 hover:text-chocolate-900 hover:bg-cream-200/60"
+                    ? "text-chocolate-900 border-saffron-500"
+                    : "text-chocolate-400 border-transparent hover:text-chocolate-900"
                 }`}
               >
                 {label}
@@ -66,12 +63,12 @@ export default function Navbar() {
           <div className="flex items-center gap-2 shrink-0">
             {user ? (
               <div className="hidden lg:flex items-center gap-2 pl-2 border-l border-cream-300">
-                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-dustyrose-500 to-chocolate-700 flex items-center justify-center text-cream-50 text-[11px] font-bold shrink-0">
+                <div className="w-7 h-7 rounded-full bg-chocolate-900 flex items-center justify-center text-cream-100 text-[11px] font-bold shrink-0">
                   {(user.displayName || user.email || "U")[0].toUpperCase()}
                 </div>
                 <button
                   onClick={handleLogout}
-                  className="text-[11px] px-2.5 py-1.5 rounded-lg bg-cream-200 hover:bg-cream-300 border border-cream-300 text-chocolate-600 hover:text-chocolate-900 transition-all"
+                  className="text-[11px] px-2.5 py-1.5 rounded-md bg-transparent hover:bg-cream-200 border border-cream-300 text-chocolate-600 hover:text-chocolate-900 transition-all"
                 >
                   Sign out
                 </button>
@@ -79,7 +76,7 @@ export default function Navbar() {
             ) : (
               <Link
                 to="/auth"
-                className="hidden lg:block px-4 py-2 rounded-lg bg-chocolate-800 hover:bg-chocolate-700 text-cream-100 text-xs font-semibold shadow-warm transition-all"
+                className="hidden lg:block px-4 py-2 rounded-md bg-saffron-500 hover:bg-saffron-400 text-chocolate-900 text-xs font-semibold transition-all active:scale-[0.97]"
               >
                 Sign In
               </Link>
@@ -90,7 +87,7 @@ export default function Navbar() {
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label="Toggle navigation menu"
               aria-expanded={menuOpen}
-              className="lg:hidden w-9 h-9 flex items-center justify-center rounded-lg bg-cream-100 border border-cream-300 text-chocolate-700 text-lg"
+              className="lg:hidden w-9 h-9 flex items-center justify-center rounded-md bg-cream-100 border border-cream-300 text-chocolate-700 text-lg"
             >
               {menuOpen ? "✕" : "☰"}
             </button>
@@ -107,9 +104,9 @@ export default function Navbar() {
                 key={to}
                 to={to}
                 onClick={() => setMenuOpen(false)}
-                className={`px-3 py-2.5 rounded-md text-xs font-semibold transition-all ${
+                className={`px-3 py-2.5 rounded-md text-xs font-medium uppercase tracking-wider transition-all ${
                   isActive(to)
-                    ? "bg-chocolate-800 text-cream-100"
+                    ? "bg-chocolate-900 text-cream-100"
                     : "text-chocolate-500 hover:text-chocolate-900 hover:bg-cream-200"
                 }`}
               >
@@ -122,7 +119,7 @@ export default function Navbar() {
             {user ? (
               <button
                 onClick={handleLogout}
-                className="text-xs px-3 py-1.5 rounded-lg bg-cream-200 border border-cream-300 text-chocolate-600"
+                className="text-xs px-3 py-1.5 rounded-md bg-cream-200 border border-cream-300 text-chocolate-600"
               >
                 Sign out
               </button>
@@ -130,7 +127,7 @@ export default function Navbar() {
               <Link
                 to="/auth"
                 onClick={() => setMenuOpen(false)}
-                className="text-xs px-3 py-1.5 rounded-lg bg-chocolate-800 text-cream-100"
+                className="text-xs px-3 py-1.5 rounded-md bg-saffron-500 text-chocolate-900 font-semibold"
               >
                 Sign In
               </Link>

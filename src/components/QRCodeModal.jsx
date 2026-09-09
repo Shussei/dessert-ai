@@ -81,7 +81,7 @@ export default function QRCodeModal({ isOpen, onClose, recipeName }) {
             className={`w-full py-3 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 ${
               copied
                 ? "bg-sage-100 text-sage-600 border border-sage-300"
-                : "bg-gradient-to-r from-chocolate-600 to-chocolate-700 hover:from-chocolate-500 hover:to-chocolate-600 text-white shadow-warm hover:shadow-warm-lg"
+                : "bg-saffron-500 hover:bg-saffron-400 text-chocolate-900"
             }`}
           >
             {copied ? (

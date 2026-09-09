@@ -106,7 +106,7 @@ export default function About() {
           <span className="badge-warm">About the System</span>
           <span className="text-xs text-chocolate-400 font-mono">SavorSense · Technical Overview</span>
         </div>
-        <h1 className="font-display text-3xl sm:text-5xl font-black text-chocolate-900 tracking-tight leading-tight">
+        <h1 className="font-display text-3xl sm:text-5xl font-semibold text-chocolate-900 tracking-tight leading-tight">
           An AI-assisted dessert analysis system, described honestly.
         </h1>
         <p className="text-chocolate-500 mt-4 text-sm sm:text-base leading-relaxed max-w-3xl">
@@ -180,7 +180,7 @@ export default function About() {
         <div className="mt-8">
           <Link
             to="/"
-            className="inline-block px-5 py-2.5 rounded-xl bg-caramel-500 hover:bg-caramel-400 text-white font-semibold text-sm transition-all shadow-warm"
+            className="inline-block px-5 py-2.5 rounded-md bg-saffron-500 hover:bg-saffron-400 text-chocolate-900 font-semibold text-sm transition-all active:scale-[0.97]"
           >
             ← Back to the platform
           </Link>

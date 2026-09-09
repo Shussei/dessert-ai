@@ -71,7 +71,7 @@ export default function ExpoKiosk() {
       </div>
 
       <header className="text-center animate-fade-in-up py-4">
-        <h1 className="font-display text-4xl sm:text-6xl lg:text-7xl font-black text-chocolate-900 tracking-tight leading-none">
+        <h1 className="font-display text-4xl sm:text-6xl lg:text-7xl font-semibold text-chocolate-900 tracking-tight leading-none">
           SavorSense
         </h1>
         <p className="font-display text-lg sm:text-2xl text-caramel-600 mt-2">

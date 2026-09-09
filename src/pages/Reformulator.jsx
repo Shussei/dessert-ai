@@ -271,7 +271,7 @@ export default function Reformulator() {
               {result.overallAssessment && (
                 <div className="bg-cream-100 px-4 py-2 rounded-xl border border-cream-300">
                   <span className="text-[10px] text-chocolate-400 block font-mono">Overall Assessment</span>
-                  <span className="text-lg font-black text-caramel-600 capitalize">
+                  <span className="text-lg font-bold text-caramel-600 capitalize">
                     {result.overallAssessment.rating}
                   </span>
                   <span className="text-[10px] text-caramel-600 block font-mono">

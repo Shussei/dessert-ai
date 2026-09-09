@@ -60,7 +60,7 @@ export default function Auth() {
       <div className="w-full max-w-md bg-white/90 backdrop-blur-sm p-8 sm:p-10 rounded-3xl border border-cream-300 shadow-warm-xl">
 
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-chocolate-700 to-chocolate-800 flex items-center justify-center text-cream-100 font-display font-bold text-2xl mb-4 shadow-warm mx-auto">
+          <div className="w-16 h-16 rounded-xl bg-chocolate-900 flex items-center justify-center text-cream-100 font-display font-semibold text-2xl mb-4 mx-auto">
             S
           </div>
           <h1 className="font-display text-2xl sm:text-3xl font-bold text-chocolate-900 mb-1">

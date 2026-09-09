@@ -464,7 +464,7 @@ export default function Evaluator() {
             {Array.isArray(analysis.strengths) && analysis.strengths.length > 0 && (
               <div className="p-5 rounded-2xl bg-sage-50 border border-sage-200">
                 <div className="flex items-center gap-2 mb-3">
-                  <h3 className="font-display text-lg font-bold text-sage-800">Strengths</h3>
+                  <h3 className="font-display text-lg font-bold text-sage-700">Strengths</h3>
                   <ProvenanceTag type="AI-Estimated" />
                 </div>
                 <ul className="space-y-2">
@@ -484,7 +484,7 @@ export default function Evaluator() {
             {Array.isArray(analysis.potentialIssues) && analysis.potentialIssues.length > 0 && (
               <div className="p-5 rounded-2xl bg-dustyrose-50 border border-dustyrose-200">
                 <div className="flex items-center gap-2 mb-3">
-                  <h3 className="font-display text-lg font-bold text-dustyrose-800">Potential Issues</h3>
+                  <h3 className="font-display text-lg font-bold text-dustyrose-700">Potential Issues</h3>
                   <ProvenanceTag type="AI-Predicted" />
                 </div>
                 <ul className="space-y-2">
