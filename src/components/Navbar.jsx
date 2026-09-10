@@ -40,20 +40,20 @@ export default function Navbar() {
               <span className="font-display text-xl font-extrabold tracking-tight text-chocolate-900">
                 SavorSense
               </span>
-              <span className="text-[9px] text-chocolate-400 font-mono font-medium uppercase tracking-[0.2em] hidden sm:block">
+              <span className="text-[9px] text-chocolate-400 font-mono font-medium uppercase tracking-[0.2em] hidden lg:block">
                 MUMENT 2026
               </span>
             </span>
           </Link>
 
           {/* Desktop Nav */}
-          <div className="hidden lg:flex items-center gap-1">
+          <div className="hidden md:flex items-center gap-0">
             {NAV_LINKS.map(({ to, label }) => (
               <Link
                 key={to}
                 to={to}
                 aria-current={isActive(to) ? "page" : undefined}
-                className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-all duration-100 border-2 ${
+                className={`px-1.5 lg:px-3 py-1.5 text-[11px] lg:text-xs font-bold uppercase tracking-wider transition-all duration-100 border-2 ${
                   isActive(to)
                     ? "bg-chocolate-900 text-cream-100 border-chocolate-900 shadow-warm"
                     : "bg-transparent text-chocolate-500 border-transparent hover:text-chocolate-900 hover:bg-saffron-100 hover:border-chocolate-900"
@@ -67,7 +67,7 @@ export default function Navbar() {
           {/* Auth */}
           <div className="flex items-center gap-2 shrink-0">
             {user ? (
-              <div className="hidden lg:flex items-center gap-2 pl-2 border-l-2 border-chocolate-200">
+              <div className="hidden md:flex items-center gap-2 pl-2 border-l-2 border-chocolate-200">
                 <div className="w-8 h-8 rounded-sm bg-chocolate-900 flex items-center justify-center text-cream-100 text-[11px] font-bold shrink-0">
                   {(user.displayName || user.email || "U")[0].toUpperCase()}
                 </div>
@@ -81,7 +81,7 @@ export default function Navbar() {
             ) : (
               <Link
                 to="/auth"
-                className="hidden lg:block px-4 py-2 rounded-md bg-saffron-400 hover:bg-saffron-300 border-2 border-chocolate-900 text-chocolate-900 text-xs font-bold shadow-warm transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+                className="hidden md:block px-4 py-2 rounded-md bg-saffron-400 hover:bg-saffron-300 border-2 border-chocolate-900 text-chocolate-900 text-xs font-bold shadow-warm transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
               >
                 Sign In
               </Link>
@@ -92,7 +92,7 @@ export default function Navbar() {
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label="Toggle navigation menu"
               aria-expanded={menuOpen}
-              className="lg:hidden w-10 h-10 flex items-center justify-center rounded-sm bg-cream-100 border-2 border-chocolate-900 text-chocolate-800 text-lg shadow-warm"
+              className="md:hidden w-10 h-10 flex items-center justify-center rounded-sm bg-cream-100 border-2 border-chocolate-900 text-chocolate-800 text-lg shadow-warm"
             >
               {menuOpen ? "✕" : "≡"}
             </button>
@@ -102,7 +102,7 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {menuOpen && (
-        <div className="lg:hidden border-t-[3px] border-chocolate-900 bg-cream-50 animate-slide-down">
+        <div className="md:hidden border-t-[3px] border-chocolate-900 bg-cream-50 animate-slide-down">
           <div className="max-w-7xl mx-auto px-4 py-3 grid grid-cols-1 gap-2">
             {NAV_LINKS.map(({ to, label }) => (
               <Link
