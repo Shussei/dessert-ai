@@ -156,7 +156,7 @@ export default function Reformulator() {
           <label className="text-xs font-semibold text-chocolate-600 uppercase tracking-wider">
             Dietary Target
           </label>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {DIETARY_TARGETS.map((target) => {
               const isActive = dietaryTarget === target.value
               return (
