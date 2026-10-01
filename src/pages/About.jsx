@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom"
+import EmailContactButton from "../components/EmailContactButton"
 
 const SECTIONS = [
   {
@@ -167,12 +168,10 @@ export default function About() {
           <span className="px-3 py-1.5 rounded-full bg-caramel-100 border border-caramel-300 text-caramel-700 text-xs font-semibold">
             Team NSSN
           </span>
-          <a
-            href="mailto:natalmadekkal.2005@gmail.com"
+          <EmailContactButton
+            label="Contact the team"
             className="px-3 py-1.5 rounded-full bg-white/10 border border-white/20 text-cream-100 text-xs font-semibold hover:bg-white/20 transition-colors"
-          >
-            Contact the team
-          </a>
+          />
         </div>
         <div className="mt-8">
           <Link

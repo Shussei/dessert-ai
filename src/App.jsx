@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Link } from "react-router-dom"
 import { AuthProvider } from "./context/AuthContext"
 
 import Navbar from "./components/Navbar"
+import EmailContactButton from "./components/EmailContactButton"
 
 import Home from "./pages/Home"
 import Evaluator from "./pages/Evaluator"
@@ -50,9 +51,10 @@ export default function App() {
                 <span aria-hidden="true">●</span>
                 <span className="text-caramel-600">Culinary R&D Platform</span>
                 <span aria-hidden="true">●</span>
-                <a href="mailto:natalmadekkal.2005@gmail.com" className="hover:text-chocolate-900 transition">
-                  Contact Team
-                </a>
+                <EmailContactButton
+                  label="Contact Team"
+                  className="hover:text-chocolate-900 transition"
+                />
               </div>
             </div>
           </footer>
