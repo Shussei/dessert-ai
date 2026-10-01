@@ -175,6 +175,11 @@ export default function Library() {
                           {item.confidence} confidence
                         </span>
                       )}
+                      {item.type === "experiment" && item.actualOutcome?.observations && (
+                        <span className="provenance-tag bg-sage-100 text-sage-700 border-sage-300 mt-2">
+                          outcome recorded
+                        </span>
+                      )}
                       {item.type === "experiment" && item.modification && (
                         <p className="text-xs text-caramel-700 font-medium mt-1 break-words">“{item.modification}”</p>
                       )}
@@ -222,6 +227,7 @@ export default function Library() {
                           <p className="text-xs font-bold text-chocolate-900 break-words">“{child.modification || child.name}”</p>
                           <p className="text-[10px] font-mono text-chocolate-400 mt-0.5">
                             {child.confidence || "unknown"} confidence
+                            {child.actualOutcome?.observations ? " · outcome recorded" : ""}
                             {child.createdAt?.seconds ? ` · ${new Date(child.createdAt.seconds * 1000).toLocaleDateString()}` : ""}
                           </p>
                         </div>

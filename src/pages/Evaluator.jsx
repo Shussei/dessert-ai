@@ -2,6 +2,7 @@ import { useState } from "react"
 import { evaluateDessertRecipe } from "../services/culinaryEngine"
 import LayerBlueprint from "../components/LayerBlueprint"
 import FlavorRadar from "../components/FlavorRadar"
+import DigitalTwin from "../components/DigitalTwin"
 import OptimizationEngine from "../components/OptimizationEngine"
 import QRCodeModal from "../components/QRCodeModal"
 import { useAuth } from "../context/AuthContext"
@@ -360,6 +361,32 @@ export default function Evaluator() {
               <button onClick={() => setShowQR(true)} className="btn-secondary text-sm">Share</button>
             </div>
           </div>
+
+          {/* Culinary Digital Twin */}
+          {analysis.sensoryProfile && (
+            <div className="max-w-3xl mx-auto">
+              <DigitalTwin
+                model={{
+                  recipeName: analysis.recipeName,
+                  ingredients: (analysis.ingredients || []).map((i) => ({
+                    name: i.name,
+                    quantity: i.quantity,
+                    amount: i.amount ?? null,
+                    unit: i.unit,
+                    macroRoll: i.role,
+                  })),
+                  macroRolls: (analysis.ingredients || []).reduce((acc, i) => {
+                    const roll = i.role || "other"
+                    acc[roll] = acc[roll] || []
+                    if (!acc[roll].includes(i.name)) acc[roll].push(i.name)
+                    return acc
+                  }, {}),
+                  structuralLayers: analysis.structuralLayers,
+                  sensoryProfile: analysis.sensoryProfile,
+                }}
+              />
+            </div>
+          )}
 
           {/* Ingredients */}
           {Array.isArray(analysis.ingredients) && analysis.ingredients.length > 0 && (

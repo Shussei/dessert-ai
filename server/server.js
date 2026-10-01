@@ -8,7 +8,10 @@ import { fileURLToPath } from "url"
 import {
   sanitizeCulinaryModel,
   buildSensoryProfile,
+  normalizeQuantity,
   validateExperimentResult,
+  validateGoalPlan,
+  sanitizeGoalPlan,
 } from "./culinaryModel.js"
 import {
   classifyRolesFromText,
@@ -17,6 +20,7 @@ import {
   suggestedCompensationGrounding,
   detectConflicts,
   deterministicDelta,
+  parseGoalHints,
 } from "./culinaryRules.js"
 
 dotenv.config({ override: true })
@@ -127,6 +131,17 @@ function parseJsonResponse(content) {
   } catch (err) {
     throw new Error(`Failed to parse AI response as JSON: ${err.message}`)
   }
+}
+
+function scanRecipeAmount(text, patterns) {
+  const lines = (text || "").split(/\n|[,;]/).map((s) => s.trim()).filter(Boolean)
+  for (const line of lines) {
+    if (patterns.some((p) => line.toLowerCase().includes(p))) {
+      const q = normalizeQuantity(line)
+      if (q && q.amount != null) return q
+    }
+  }
+  return null
 }
 
 function coerceEnum(value, allowed, fallback) {
@@ -595,6 +610,7 @@ Analyze the experiment.`
       original: i?.original || null,
       adjusted: i?.adjusted || null,
       changeNote: i?.changeNote || "",
+      deterministic: false,
     })).filter((i) => i.name)
 
     const delta = deterministicDelta({ ingredients: baseModel.ingredients }, mod, flags)
@@ -606,6 +622,7 @@ Analyze the experiment.`
           original: delta.baseAmount ? `${delta.baseAmount}${delta.baseUnit || ""}` : predictedIngredients[sugarIdx].original,
           adjusted: `${delta.modifiedAmount}${delta.baseUnit || ""}`,
           changeNote: delta.note,
+          deterministic: true,
         }
       } else {
         predictedIngredients.push({
@@ -613,6 +630,7 @@ Analyze the experiment.`
           original: `${delta.baseAmount}${delta.baseUnit || ""}`,
           adjusted: `${delta.modifiedAmount}${delta.baseUnit || ""}`,
           changeNote: delta.note,
+          deterministic: true,
         })
       }
     }
@@ -699,6 +717,134 @@ Analyze the experiment.`
       return res.status(504).json({ error: "Experiment analysis timed out. Try a slightly shorter recipe or modification.", requestId: id })
     }
     return res.status(500).json({ error: "Experiment analysis failed. Please try again.", requestId: id })
+  }
+})
+
+// ── EXPERIMENT CANDIDATES (goal-based) ──
+app.post("/experiment/candidates", async (req, res) => {
+  const id = generateId()
+  const start = Date.now()
+
+  const recipeValidation = validateRecipeInput(req.body?.recipeText)
+  if (!recipeValidation.valid) {
+    logRequest(id, "/experiment/candidates", 0, "validation_error", recipeValidation.error)
+    return res.status(400).json({ error: recipeValidation.error, requestId: id })
+  }
+  const goalText = (req.body?.goal || "").trim()
+  if (!goalText) {
+    logRequest(id, "/experiment/candidates", 0, "validation_error", "Describe your goal (e.g. '25% less sugar while keeping the texture').")
+    return res.status(400).json({ error: "Describe your goal (e.g. '25% less sugar while keeping the texture').", requestId: id })
+  }
+  if (goalText.length > 400) {
+    logRequest(id, "/experiment/candidates", 0, "validation_error", "Goal description is too long (maximum 400 characters).")
+    return res.status(400).json({ error: "Goal description is too long (maximum 400 characters).", requestId: id })
+  }
+  if (!groq) {
+    logRequest(id, "/experiment/candidates", 0, "ai_unavailable")
+    return res.status(503).json({ error: "AI service not available. GROQ_API_KEY not configured.", requestId: id })
+  }
+
+  const hints = parseGoalHints(goalText)
+  const flags = classifyRolesFromText(recipeValidation.value)
+
+  const SYSTEM_PROMPT = `You are a pastry-engineering research assistant. A user states a GOAL for a dessert recipe.
+Return a JSON object with this EXACT structure:
+{
+  "goal": {
+    "intent": "string — one short phrase describing the real intent, e.g. 'reduce sweetness'",
+    "target": { "ingredient": "string or null — the primary ingredient to act on, e.g. 'sugar'", "change": "string or null — e.g. '-25%' or 'remove'", "notes": "string" },
+    "constraints": ["string — what the user wants to PRESERVE, e.g. 'texture', 'moisture'"]
+  },
+  "baseIngredients": [ { "name": "string — key ingredient names from the recipe", "quantity": "string — its amount as written in the recipe, or null" } ],
+  "candidates": [
+    {
+      "id": "A",
+      "title": "short title, e.g. 'Sugar -25%'",
+      "modification": "one complete, executable change, e.g. 'Reduce sugar by 25%'",
+      "rationale": "why this variant is worth trying",
+      "predictedFit": "how well this aligns with the user's stated goal: high|moderate|low|unknown",
+      "expectedEffects": ["2-4 qualitative short effects, e.g. 'sweetness decreases', 'browning may decrease'"],
+      "tradeoffs": ["2-3 qualitative trade-offs"],
+      "risks": { "summary": "string", "mitigations": ["string"] },
+      "compensation": ["1-3 compensating actions that help preserve the stated constraints"],
+      "confidence": "high|moderate|low|unknown",
+      "assumptions": ["string"],
+      "limitations": ["string"]
+    }
+  ]
+}
+STRICT RULES:
+- Design 2-3 DISTINCT candidate modifications whenever the recipe allows more than one plausible approach: include at least one baseline/low-risk variant (closest to the letter of the goal) and at least one bolder alternative (e.g. a different ingredient angle or an extra step). Maximum 3, never more.
+- Use ONLY qualitative language (low/moderate/high, decrease/increase, possible/likely/unknown). Never invent percentages, weights, calories, or measurements the user did not provide.
+- Every candidate.modification must be a standalone phrasing that a modification parser can read (e.g. "Reduce sugar by 25%" or "Replace butter with coconut oil" or "Reduce flour by 15%"). If the goal implies a percentage, include it in the modification text.
+- Do not use the word "optimal". Use "better aligned with the stated goal" at most.
+- Treat these deterministic observations as ground truth: ingredients/categories detected: ${Object.entries(flags).filter(([k, v]) => v && !k.endsWith("Present")).map(([k]) => k).join(", ") || "none found"}.
+- "predictedFit" is a qualitative alignment rating, never a guarantee.`
+
+  const userPrompt = `BASE RECIPE:\n${recipeValidation.value}\n\nUSER GOAL: ${goalText}
+Interpret the goal above, show it back, and generate 1-3 candidate experiments.`
+
+  try {
+    const result = await callGroqWithTimeout([
+      { role: "system", content: SYSTEM_PROMPT },
+      { role: "user", content: userPrompt },
+    ], 2400, 45000)
+
+    const parsed = parseJsonResponse(result.content)
+    const validated = validateGoalPlan(parsed)
+    if (!validated.ok) {
+      logRequest(id, "/experiment/candidates", Date.now() - start, "unusable_output", validated.error)
+      return res.status(502).json({ error: validated.error, requestId: id })
+    }
+
+    const plan = sanitizeGoalPlan(parsed)
+
+    // Build the base model for deterministic delta computation.
+    const echoedIngredients = Array.isArray(parsed.baseIngredients)
+      ? sanitizeCulinaryModel({ ingredients: parsed.baseIngredients }).ingredients
+      : []
+    const baseModel = { ingredients: echoedIngredients }
+    if (!baseModel.ingredients.some((ing) => /sugar|sweetener|honey|syrup/.test(ing.name || "") && ing.amount != null)) {
+      const q = scanRecipeAmount(recipeValidation.value, ["sugar", "honey", "syrup", "sweetener"])
+      if (q) baseModel.ingredients.push({ name: "sugar", amount: q.amount, unit: q.unit, macroRoll: "sweetener" })
+    }
+
+    for (const candidate of plan.candidates) {
+      const mod = detectModification(candidate.modification)
+      candidate.modificationMeta = {
+        action: mod.action,
+        category: mod.category,
+        pct: mod.pct,
+        valid: mod.valid,
+        summary: mod.summary,
+      }
+      if (mod.valid && mod.category === "sweetener" && mod.pct) {
+        const delta = deterministicDelta({ ingredients: baseModel.ingredients }, mod, flags)
+        if (delta) candidate.exactDelta = `${delta.baseAmount}${delta.baseUnit || ""} \u2192 ~${delta.modifiedAmount}${delta.baseUnit || ""}`
+      }
+    }
+
+    logRequest(id, "/experiment/candidates", Date.now() - start, "success")
+    return res.json({
+      data: {
+        goal: plan.goal,
+        candidates: plan.candidates,
+        hints: { category: hints.category, action: hints.action, pct: hints.pct, constraints: hints.constraints },
+      },
+      metadata: {
+        requestId: id,
+        model: result.model,
+        tokensUsed: result.usage?.total_tokens || 0,
+        source: "ai_estimated",
+        disclaimer: "Candidate experiments are qualitative AI estimates anchored by deterministic ingredient-role rules — not laboratory measurements.",
+      },
+    })
+  } catch (err) {
+    logRequest(id, "/experiment/candidates", Date.now() - start, "error", err.message)
+    if (err.message.includes("timed out")) {
+      return res.status(504).json({ error: "Candidate generation timed out. Try a shorter goal.", requestId: id })
+    }
+    return res.status(500).json({ error: "Candidate generation failed. Please try again.", requestId: id })
   }
 })
 

@@ -224,3 +224,25 @@ export function deterministicDelta(model, mod, _flags) {
     note: `${base.name}: ${base.amount}${base.unit || ""} \u2192 ~${modifiedAmount}${base.unit || ""} (${mod.action === "remove" ? "removed" : `~${mod.pct}% reduction`}). Exact recipe quantities are taken at face value from the ingredient list.`,
   }
 }
+
+const PRESERVE_KEYWORDS = [
+  "texture", "moist", "moisture", "soft", "tender", "flavor", "richness", "browning",
+  "sweetness", "sweet", "aerated", "volume", "structure", "crumb", "mouthfeel", "balance",
+  "airy", "light", "dense",
+]
+
+export function parseGoalHints(text) {
+  const t = (text || "").toLowerCase()
+  let category = null
+  for (const { category: cat, re } of CATEGORY_KEYWORDS) {
+    if (re.test(t)) { category = cat; break }
+  }
+  let action = null
+  for (const [candidate, re] of Object.entries(ACTION_WORDS)) {
+    if (re.test(t)) { action = candidate; break }
+  }
+  const pctMatch = t.match(/(\d+(?:\.\d+)?)\s*%/)
+  const pct = pctMatch ? Math.min(100, Math.max(1, parseFloat(pctMatch[1]))) : null
+  const constraints = PRESERVE_KEYWORDS.filter((w) => t.includes(w))
+  return { category, action, pct, constraints }
+}

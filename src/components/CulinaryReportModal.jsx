@@ -1,3 +1,5 @@
+import PredictionRealityCard from "./PredictionRealityCard"
+
 export default function CulinaryReportModal({ isOpen, onClose, reportData }) {
   if (!isOpen || !reportData) return null
 
@@ -146,6 +148,8 @@ export default function CulinaryReportModal({ isOpen, onClose, reportData }) {
                 </ul>
               </div>
             )}
+
+            <PredictionRealityCard experimentId={d.id} prediction={exp} actual={d.actualOutcome} />
 
             {Array.isArray(exp.modification?.conflicts) && exp.modification.conflicts.length > 0 && (
               <div>

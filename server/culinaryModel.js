@@ -284,3 +284,67 @@ export function validateExperimentResult(raw) {
   }
   return { ok: true, data: raw }
 }
+
+export const FIT_LEVELS = ["high", "moderate", "low", "unknown"]
+
+function coerceFit(value) {
+  return typeof value === "string" && FIT_LEVELS.includes(value) ? value : "unknown"
+}
+
+function pickStrings(value, maxItems) {
+  if (!Array.isArray(value)) return []
+  return value.map(asString).filter(Boolean).slice(0, maxItems || 99)
+}
+
+export function sanitizeGoalPlan(raw) {
+  const source = raw && typeof raw === "object" ? raw : {}
+
+  const goalRaw = (typeof source.goal === "object" && source.goal !== null) ? source.goal : {}
+  const targetRaw = (typeof goalRaw.target === "object" && goalRaw.target !== null) ? goalRaw.target : {}
+
+  const goal = {
+    intent: asString(goalRaw.intent),
+    target: {
+      ingredient: asString(targetRaw.ingredient, null),
+      change: asString(targetRaw.change, null),
+      notes: asString(targetRaw.notes),
+    },
+    constraints: pickStrings(goalRaw.constraints, 6),
+  }
+
+  const candidates = asArray(source.candidates).slice(0, 3).map((c, index) => {
+    const riskRaw = (typeof c.risks === "object" && c.risks !== null) ? c.risks : {}
+    return {
+      id: asString(c?.id) || `candidate_${index + 1}`,
+      title: asString(c?.title),
+      modification: asString(c?.modification),
+      rationale: asString(c?.rationale),
+      predictedFit: coerceFit(c?.predictedFit),
+      expectedEffects: pickStrings(c?.expectedEffects, 4),
+      tradeoffs: pickStrings(c?.tradeoffs, 4),
+      risks: {
+        summary: asString(riskRaw.summary),
+        mitigations: pickStrings(riskRaw.mitigations, 4),
+      },
+      compensation: pickStrings(c?.compensation, 3),
+      confidence: coerceConfidence(c?.confidence),
+      assumptions: pickStrings(c?.assumptions, 3),
+      limitations: pickStrings(c?.limitations, 3),
+      exactDelta: asString(c?.exactDelta, null),
+      modificationMeta: null,
+    }
+  }).filter((c) => c.modification)
+
+  return { goal, candidates }
+}
+
+export function validateGoalPlan(raw) {
+  if (!raw || typeof raw !== "object") {
+    return { ok: false, error: "AI returned no usable data. Please try again." }
+  }
+  const plan = sanitizeGoalPlan(raw)
+  if (plan.candidates.length === 0 || !plan.goal.intent) {
+    return { ok: false, error: "AI response missing a usable experiment plan. Please try again." }
+  }
+  return { ok: true, data: plan }
+}

@@ -64,6 +64,10 @@ export async function runExperiment(recipeText, modification) {
   return apiRequest("/experiment", { recipeText, modification })
 }
 
+export async function generateCandidates(recipeText, goal) {
+  return apiRequest("/experiment/candidates", { recipeText, goal }, 50000)
+}
+
 export async function checkHealth() {
   try {
     const res = await fetch(`${API_BASE}/health`)

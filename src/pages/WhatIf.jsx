@@ -1,7 +1,9 @@
 import { useState, useEffect, useMemo } from "react"
 import { useSearchParams, Link } from "react-router-dom"
-import { runExperiment } from "../services/culinaryEngine"
+import { runExperiment, generateCandidates } from "../services/culinaryEngine"
 import FlavorRadar from "../components/FlavorRadar"
+import DigitalTwin from "../components/DigitalTwin"
+import ExperimentMatrix from "../components/ExperimentMatrix"
 import { useAuth } from "../context/AuthContext"
 import { collection, query, where, getDocs, addDoc, getDoc, doc, serverTimestamp } from "firebase/firestore"
 import { db } from "../firebase"
@@ -36,6 +38,21 @@ const QUICK_MODS = [
   "Replace butter with coconut oil",
   "Reduce flour by 15%",
   "Swap whole milk for oat milk",
+]
+
+const QUICK_GOALS = [
+  "25% less sugar, keep the texture",
+  "Make it richer and more indulgent",
+  "Lighten it — less butter, keep the crumb",
+  "Reduce sweetness without losing moisture",
+]
+
+const GOAL_STAGES = [
+  "Interpreting your goal...",
+  "Finding candidate modifications...",
+  "Grounding candidates with deterministic rules...",
+  "Rating predicted fit for each candidate...",
+  "Preparing experiment plans...",
 ]
 
 function ConfidenceBadge({ level }) {
@@ -110,6 +127,12 @@ export default function WhatIf() {
   const [searchParams] = useSearchParams()
   const [recipeText, setRecipeText] = useState(EXAMPLE_RECIPES[0].text)
   const [modification, setModification] = useState("Reduce sugar by 25%")
+  const [mode, setMode] = useState("modify")
+  const [goalText, setGoalText] = useState("")
+  const [goalPlan, setGoalPlan] = useState(null)
+  const [selectedCandidateId, setSelectedCandidateId] = useState(null)
+  const [generating, setGenerating] = useState(false)
+  const [goalError, setGoalError] = useState("")
   const [loading, setLoading] = useState(false)
   const [stage, setStage] = useState(0)
   const [error, setError] = useState("")
@@ -121,7 +144,9 @@ export default function WhatIf() {
   const [showPicker, setShowPicker] = useState(false)
   const [libraryItems, setLibraryItems] = useState([])
   const [pickerLoading, setPickerLoading] = useState(false)
+  const [openWhy, setOpenWhy] = useState({})
 
+  const busy = loading || generating
   const base = result?.baseState
   const predicted = result?.predictedModifiedState
   const sensoryDiff = useMemo(
@@ -130,12 +155,12 @@ export default function WhatIf() {
   )
 
   useEffect(() => {
-    if (!loading) return
+    if (!busy) return
     const interval = setInterval(() => {
       setStage((s) => Math.min(s + 1, MAX_STAGE))
     }, 2600)
     return () => clearInterval(interval)
-  }, [loading])
+  }, [busy])
 
   useEffect(() => {
     async function loadFromUrl() {
@@ -185,14 +210,56 @@ export default function WhatIf() {
     setResult(null)
     setSaved(false)
     setError("")
+    setGoalPlan(null)
+    setSelectedCandidateId(null)
   }
 
-  async function handleRun() {
+  async function handleGenerate() {
+    if (!recipeText.trim()) {
+      setGoalError("Enter a recipe to design experiments for.")
+      return
+    }
+    if (!goalText.trim()) {
+      setGoalError("Describe your goal (e.g. '25% less sugar, keep the texture').")
+      return
+    }
+    setGoalError("")
+    setGoalPlan(null)
+    setResult(null)
+    setSaved(false)
+    setError("")
+    setGenerating(true)
+    setStage(0)
+    try {
+      const resp = await generateCandidates(recipeText.trim(), goalText.trim())
+      setGoalPlan(resp.data)
+    } catch (err) {
+      if (err.message?.includes("Could not connect")) {
+        setGoalError("Could not connect to the analysis server. Please ensure the backend is running.")
+      } else if (err.message?.includes("timed out") || err.message?.includes("timeout")) {
+        setGoalError("Candidate generation timed out. Try a shorter goal.")
+      } else {
+        setGoalError(err.message || "Candidate generation failed. Please try again.")
+      }
+    } finally {
+      setGenerating(false)
+    }
+  }
+
+  async function handleUseCandidate(candidate) {
+    if (!candidate?.modification) return
+    setModification(candidate.modification)
+    setSelectedCandidateId(candidate.id)
+    await handleRun(candidate.modification)
+  }
+
+  async function handleRun(overrideMod) {
     if (!recipeText.trim()) {
       setError("Enter a recipe to run the experiment on.")
       return
     }
-    if (!modification.trim()) {
+    const modToRun = (overrideMod || modification || "").trim()
+    if (!modToRun) {
       setError("Describe the modification (e.g. 'Reduce sugar by 25%').")
       return
     }
@@ -202,7 +269,7 @@ export default function WhatIf() {
     setLoading(true)
     setStage(0)
     try {
-      const resp = await runExperiment(recipeText.trim(), modification.trim())
+      const resp = await runExperiment(recipeText.trim(), modToRun)
       setResult(resp.data)
     } catch (err) {
       if (err.message?.includes("Could not connect")) {
@@ -225,6 +292,7 @@ export default function WhatIf() {
     setSaving(true)
     try {
       const experimentId = linkedExperimentId || `exp_${Date.now()}`
+      const selectedCandidate = goalPlan?.candidates?.find((c) => c.id === selectedCandidateId) || null
       await addDoc(collection(db, "library"), {
         uid: user.uid,
         name: result.modification.summary || "What-If Experiment",
@@ -234,6 +302,9 @@ export default function WhatIf() {
         experimentId,
         parentId: baseLibraryId || null,
         confidence: result.confidence?.overall || "unknown",
+        goal: goalPlan?.goal ? { intent: goalPlan.goal.intent, constraints: goalPlan.goal.constraints, target: goalPlan.goal.target } : null,
+        candidateId: selectedCandidate?.id || null,
+        candidateTitle: selectedCandidate?.title || null,
         experimentData: result,
         createdAt: serverTimestamp(),
       })
@@ -307,7 +378,25 @@ export default function WhatIf() {
           </p>
         )}
 
-        <div className="space-y-2">
+        <div className="flex items-center gap-1 p-1 rounded-sm bg-cream-100 border-2 border-chocolate-900 w-fit mb-5">
+          <button
+            onClick={() => { setMode("modify"); setGoalError(""); setResult(null); setSelectedCandidateId(null) }}
+            disabled={busy}
+            className={`px-4 py-1.5 rounded-sm text-xs font-bold transition-all disabled:opacity-50 ${mode === "modify" ? "bg-chocolate-900 text-cream-50" : "text-chocolate-600 hover:text-chocolate-900"}`}
+          >
+            Direct modification
+          </button>
+          <button
+            onClick={() => { setMode("goal"); setError(""); setSelectedCandidateId(null) }}
+            disabled={busy}
+            className={`px-4 py-1.5 rounded-sm text-xs font-bold transition-all disabled:opacity-50 ${mode === "goal" ? "bg-chocolate-900 text-cream-50" : "text-chocolate-600 hover:text-chocolate-900"}`}
+          >
+            State a goal
+          </button>
+        </div>
+
+        {mode === "modify" ? (
+        <div className="space-y-2 mb-5">
           <label className="text-xs font-semibold text-chocolate-600 uppercase tracking-wider">
             Modification
           </label>
@@ -318,14 +407,14 @@ export default function WhatIf() {
               onChange={(e) => { setModification(e.target.value); setResult(null) }}
               placeholder="e.g. Reduce sugar by 25%"
               className="input-warm"
-              disabled={loading}
+              disabled={busy}
             />
             <div className="flex flex-wrap gap-2">
               {QUICK_MODS.map((m) => (
                 <button
                   key={m}
                   onClick={() => { setModification(m); setResult(null) }}
-                  disabled={loading}
+                  disabled={busy}
                   className="px-2.5 py-1.5 rounded-sm bg-cream-100 border-2 border-chocolate-300 hover:border-chocolate-900 hover:bg-saffron-100 text-[11px] text-chocolate-600 font-medium transition-all disabled:opacity-50"
                 >
                   {m}
@@ -334,15 +423,73 @@ export default function WhatIf() {
             </div>
           </div>
         </div>
+        ) : (
+        <div className="space-y-2 mb-5">
+          <label className="text-xs font-semibold text-chocolate-600 uppercase tracking-wider">
+            Goal
+          </label>
+          <div className="flex flex-col gap-3">
+            <textarea
+              rows={2}
+              value={goalText}
+              onChange={(e) => { setGoalText(e.target.value); setGoalPlan(null); setResult(null) }}
+              placeholder="e.g. 25% less sugar, keep the texture"
+              className="input-warm resize-none font-mono text-xs leading-relaxed"
+              disabled={busy}
+            />
+            <div className="flex flex-wrap gap-2">
+              {QUICK_GOALS.map((g) => (
+                <button
+                  key={g}
+                  onClick={() => { setGoalText(g); setGoalPlan(null); setResult(null) }}
+                  disabled={busy}
+                  className="px-2.5 py-1.5 rounded-sm bg-cream-100 border-2 border-chocolate-300 hover:border-chocolate-900 hover:bg-sage-50 text-[11px] text-chocolate-600 font-medium transition-all disabled:opacity-50"
+                >
+                  {g}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+        )}
+
+        {goalError && mode === "goal" && (
+          <p className="text-xs text-dustyrose-600 mb-2" role="alert">{goalError}</p>
+        )}
 
         <button
-          onClick={handleRun}
-          disabled={loading || !recipeText.trim() || !modification.trim()}
+          onClick={mode === "goal" ? handleGenerate : () => handleRun()}
+          disabled={busy || !recipeText.trim() || (mode === "goal" ? !goalText.trim() : !modification.trim())}
           className="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? "Running Experiment..." : "Run Experiment →"}
+          {busy
+            ? mode === "goal" ? "Designing candidate experiments..." : "Running Experiment..."
+            : mode === "goal" ? "Design candidate experiments →" : "Run Experiment →"}
         </button>
+
+        {mode === "goal" && !goalPlan && !busy && (
+          <p className="text-[10px] text-chocolate-400 font-mono mt-3">
+            The engine will propose up to 3 candidate modifications, each with predicted fit, effects, trade-offs and risks.
+            You pick one to run.
+          </p>
+        )}
       </div>
+
+      {/* Candidate matrix (goal mode) */}
+      {mode === "goal" && goalPlan && !busy && (
+        <div className="animate-fade-in-up">
+          <ExperimentMatrix
+            goal={goalPlan.goal}
+            candidates={goalPlan.candidates}
+            selectedId={selectedCandidateId}
+            onSelect={(id) => {
+              const candidate = goalPlan.candidates.find((c) => c.id === id)
+              handleUseCandidate(candidate)
+            }}
+            generating={generating}
+          />
+        </div>
+      )}
 
       {/* Library picker */}
       {showPicker && (
@@ -385,7 +532,7 @@ export default function WhatIf() {
       )}
 
       {/* Loading */}
-      {loading && (
+      {busy && (
         <div className="card-warm p-8 animate-fade-in">
           <div className="flex flex-col items-center gap-5">
             <div className="w-16 h-16 rounded-md bg-caramel-100 border-2 border-caramel-300 flex items-center justify-center">
@@ -393,9 +540,9 @@ export default function WhatIf() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8 3h8v18H8zM8 9h3m-3 4h6m-6 4h4" />
               </svg>
             </div>
-            <p className="text-sm font-bold text-chocolate-900 mb-1">Running culinary what-if</p>
+            <p className="text-sm font-bold text-chocolate-900 mb-1">{mode === "goal" ? "Designing candidate experiments" : "Running culinary what-if"}</p>
             <ul className="space-y-1.5 text-left">
-              {STAGES.map((s, idx) => (
+              {(mode === "goal" ? GOAL_STAGES : STAGES).map((s, idx) => (
                 <li key={s} className="flex items-center gap-2 text-xs transition-opacity duration-300" style={{ opacity: idx <= stage ? 1 : 0.3 }}>
                   {idx < stage ? (
                     <svg className="w-3.5 h-3.5 text-sage-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -428,6 +575,9 @@ export default function WhatIf() {
                 <div className="flex flex-wrap items-center gap-2 mb-2">
                   <span className="badge-warm">Experiment Result</span>
                   <ProvenanceTag>AI-Estimated + Rules</ProvenanceTag>
+                  {selectedCandidateId && goalPlan?.goal?.intent && (
+                    <ProvenanceTag>goal: {goalPlan.goal.intent}</ProvenanceTag>
+                  )}
                   <ConfidenceBadge level={result.confidence?.overall} />
                 </div>
                 <p className="font-mono text-[10px] text-chocolate-400 uppercase tracking-wider mb-1">
@@ -505,6 +655,16 @@ export default function WhatIf() {
                 )}
               </div>
             </div>
+          )}
+
+          {/* Digital twin */}
+          {base && (
+            <DigitalTwin
+              model={base}
+              modified={predicted?.sensory}
+              deltas={predicted?.ingredients}
+              effects={result.effects}
+            />
           )}
 
           {/* Predicted state + radar comparison */}
@@ -595,10 +755,13 @@ export default function WhatIf() {
           {/* Effects */}
           {Array.isArray(result.effects) && result.effects.length > 0 && (
             <div className="card-warm p-6">
-              <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center gap-2 mb-2">
                 <h3 className="font-display text-lg font-bold text-chocolate-900">Predicted Effects</h3>
                 <ProvenanceTag>AI-Estimated</ProvenanceTag>
               </div>
+              <p className="text-xs text-chocolate-400 mb-4">
+                Qualitative directions only. Expand Why? for the reasoning surfaced for each effect.
+              </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {result.effects.map((eff, idx) => (
                   <div key={idx} className="p-4 rounded-md bg-cream-50 border-2 border-cream-300">
@@ -609,7 +772,26 @@ export default function WhatIf() {
                         <ConfidenceBadge level={eff.confidence} />
                       </span>
                     </div>
-                    {eff.explanation && <p className="text-xs text-chocolate-500 leading-relaxed">{eff.explanation}</p>}
+                    {eff.summary && <p className="text-xs text-chocolate-500 leading-relaxed">{eff.summary}</p>}
+                    <button
+                      onClick={() => setOpenWhy((prev) => ({ ...prev, [idx]: !prev[idx] }))}
+                      className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-bold text-caramel-600 hover:text-caramel-700 underline underline-offset-2 transition-colors"
+                    >
+                      <svg className={`w-3 h-3 transition-transform ${openWhy[idx] ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                      </svg>
+                      {openWhy[idx] ? "Hide why" : "Why?"}
+                    </button>
+                    {openWhy[idx] && (
+                      <div className="mt-2 pt-2 border-t-2 border-cream-300 animate-fade-in">
+                        {eff.explanation && <p className="text-xs text-chocolate-500 leading-relaxed">{eff.explanation}</p>}
+                        <div className="flex flex-wrap items-center gap-2 mt-2">
+                          <span className="text-[10px] font-mono text-chocolate-400 uppercase">Driver:</span>
+                          <span className="text-[11px] text-chocolate-600 capitalize">{eff.driver || eff.drivenBy || "modification extrapolation"}</span>
+                          {eff.confidence && <ConfidenceBadge level={eff.confidence} />}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
