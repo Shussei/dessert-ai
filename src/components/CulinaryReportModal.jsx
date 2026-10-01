@@ -6,6 +6,24 @@ export default function CulinaryReportModal({ isOpen, onClose, reportData }) {
   }
 
   const d = reportData
+  const exp = d.type === "experiment" ? d.experimentData : null
+
+  function confidenceStyle(level) {
+    return {
+      high: "bg-sage-100 text-sage-700",
+      moderate: "bg-caramel-100 text-caramel-700",
+      low: "bg-dustyrose-100 text-dustyrose-700",
+      unknown: "bg-cream-200 text-chocolate-500",
+    }[level] || "bg-cream-200 text-chocolate-500"
+  }
+
+  function severityStyle(level) {
+    return {
+      minor: "bg-cream-200 text-chocolate-500",
+      moderate: "bg-caramel-100 text-caramel-700",
+      significant: "bg-dustyrose-100 text-dustyrose-700",
+    }[level] || "bg-cream-200 text-chocolate-500"
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-chocolate-900/50 backdrop-blur-sm overflow-y-auto animate-fade-in">
@@ -56,6 +74,92 @@ export default function CulinaryReportModal({ isOpen, onClose, reportData }) {
         {d.dietaryTarget && (
           <div className="mb-6">
             <span className="badge-warm">{d.dietaryTarget}</span>
+          </div>
+        )}
+
+        {/* Experiment payload */}
+        {exp && (
+          <div className="mb-6 space-y-5">
+            <div className="p-4 rounded-2xl bg-white border border-cream-300">
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                <span className="px-2 py-0.5 rounded bg-caramel-100 border border-caramel-300 text-caramel-700 text-[10px] font-bold uppercase">Modification</span>
+                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${confidenceStyle(exp.confidence?.overall)}`}>
+                  {exp.confidence?.overall || "unknown"} confidence
+                </span>
+              </div>
+              <p className="text-sm font-semibold text-chocolate-900">{exp.modification?.summary || d.modification || "What-If experiment"}</p>
+              {exp.overallAssessment?.rating && (
+                <p className="text-xs text-chocolate-500 mt-1 capitalize">
+                  Overall assessment: <span className="font-semibold">{exp.overallAssessment.rating}</span>
+                  {exp.overallAssessment.confidence ? ` · ${exp.overallAssessment.confidence} confidence` : ""}
+                </p>
+              )}
+            </div>
+
+            {exp.comparisonSummary && (
+              <div className="p-4 rounded-2xl bg-white border border-cream-300">
+                <span className="text-[10px] text-caramel-600 font-mono uppercase tracking-wider block mb-2">Base vs Modified</span>
+                <dl className="space-y-1 text-xs text-chocolate-600">
+                  <div><dt className="inline font-semibold">Changed: </dt><dd className="inline">{exp.comparisonSummary.whatChanged}</dd></div>
+                  {exp.comparisonSummary.expected && <div><dt className="inline font-semibold">Expected: </dt><dd className="inline">{exp.comparisonSummary.expected}</dd></div>}
+                  {exp.comparisonSummary.tradeoff && <div><dt className="inline font-semibold">Trade-off: </dt><dd className="inline">{exp.comparisonSummary.tradeoff}</dd></div>}
+                </dl>
+              </div>
+            )}
+
+            {Array.isArray(exp.effects) && exp.effects.length > 0 && (
+              <div>
+                <span className="text-[10px] text-caramel-600 font-mono uppercase tracking-wider block mb-2">Predicted effects</span>
+                <ul className="space-y-1.5">
+                  {exp.effects.map((eff, idx) => (
+                    <li key={idx} className="p-2.5 rounded-xl bg-cream-50 border border-cream-200 text-xs text-chocolate-600">
+                      <span className="font-bold capitalize text-chocolate-800">{eff.dimension}</span> — {eff.change}
+                      <span className={`ml-2 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase border ${confidenceStyle(eff.confidence)}`}>{eff.confidence}</span>
+                      {eff.explanation && <p className="text-[11px] text-chocolate-500 mt-0.5">{eff.explanation}</p>}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {Array.isArray(exp.suggestedCompensation) && exp.suggestedCompensation.length > 0 && (
+              <div>
+                <span className="text-[10px] text-sage-600 font-mono uppercase tracking-wider block mb-2">Compensation</span>
+                <ul className="space-y-1.5">
+                  {exp.suggestedCompensation.map((c, idx) => (
+                    <li key={idx} className="text-xs text-chocolate-600 flex items-start gap-2">
+                      <span className="text-sage-400 mt-0.5">•</span>
+                      <span><span className="font-semibold capitalize">{c.targetProperty}:</span> {c.action}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {Array.isArray(exp.risks) && exp.risks.length > 0 && (
+              <div>
+                <span className="text-[10px] text-dustyrose-600 font-mono uppercase tracking-wider block mb-2">Risks</span>
+                <ul className="space-y-1.5">
+                  {exp.risks.map((r, idx) => (
+                    <li key={idx} className="text-xs text-chocolate-600">• {r.risk}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {Array.isArray(exp.modification?.conflicts) && exp.modification.conflicts.length > 0 && (
+              <div>
+                <span className="text-[10px] text-dustyrose-600 font-mono uppercase tracking-wider block mb-2">Rule-layer conflicts</span>
+                <ul className="space-y-1.5">
+                  {exp.modification.conflicts.map((c, idx) => (
+                    <li key={idx} className="text-xs text-chocolate-600">
+                      <span className={`mr-1.5 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase border ${severityStyle(c.severity)}`}>{c.severity}</span>
+                      {c.message}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         )}
 

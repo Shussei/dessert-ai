@@ -10,6 +10,7 @@ export default defineConfig({
       '/analyze-flavor': 'http://localhost:3000',
       '/generate': 'http://localhost:3000',
       '/reformulate': 'http://localhost:3000',
+      '/experiment': 'http://localhost:3000',
       '/health': 'http://localhost:3000',
       '/logs': 'http://localhost:3000',
     },

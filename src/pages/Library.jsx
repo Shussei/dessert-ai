@@ -54,8 +54,18 @@ export default function Library() {
       generated: "Generated Recipe",
       reformulated: "Reformulation",
       compared: "Comparison",
+      experiment: "Experiment / What-If",
     }[type] || type || "Saved Item"
   }
+
+  const topLevel = items.filter((i) => !i.parentId)
+  const childrenByParent = items.reduce((acc, item) => {
+    if (item.parentId) {
+      acc[item.parentId] = acc[item.parentId] || []
+      acc[item.parentId].push(item)
+    }
+    return acc
+  }, {})
 
   if (loading) {
     return (
@@ -90,9 +100,14 @@ export default function Library() {
             Your personal notebook of analyses, recipes, and experiments
           </p>
         </div>
-        <Link to="/evaluator" className="btn-primary shrink-0 text-center">
-          + New Evaluation
-        </Link>
+        <div className="flex flex-wrap gap-2 shrink-0">
+          <Link to="/whatif" className="btn-primary shrink-0 text-center">
+            Run an Experiment
+          </Link>
+          <Link to="/evaluator" className="btn-secondary shrink-0 text-center">
+            + New Evaluation
+          </Link>
+        </div>
       </div>
 
       {/* Not signed in */}
@@ -134,49 +149,97 @@ export default function Library() {
       {/* Items list */}
       {user && items.length > 0 && (
         <div className="space-y-3">
-          {items.map((item) => (
-            <div
-              key={item.id}
-              className="p-5 rounded-2xl bg-white border border-cream-300 hover:border-caramel-300 shadow-warm transition-all flex flex-col gap-3"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <span className="text-[10px] text-caramel-600 font-mono uppercase tracking-wider block">
-                    {itemTypeLabel(item.type)}
-                  </span>
-                  <h3 className="text-base font-bold text-chocolate-900 mt-0.5 break-words">
-                    {item.name || "Untitled"}
-                  </h3>
-                  {item.recipeText && (
-                    <p className="text-xs text-chocolate-400 mt-1 truncate max-w-xl">{item.recipeText}</p>
-                  )}
-                  {item.dietaryTarget && (
-                    <span className="badge-warm mt-2">{item.dietaryTarget}</span>
-                  )}
+          {topLevel.map((item) => {
+            const children = childrenByParent[item.id] || []
+            return (
+              <div key={item.id}>
+                <div
+                  className="p-5 rounded-2xl bg-white border border-cream-300 hover:border-caramel-300 shadow-warm transition-all flex flex-col gap-3"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <span className="text-[10px] text-caramel-600 font-mono uppercase tracking-wider block">
+                        {itemTypeLabel(item.type)}
+                      </span>
+                      <h3 className="text-base font-bold text-chocolate-900 mt-0.5 break-words">
+                        {item.name || "Untitled"}
+                      </h3>
+                      {item.recipeText && (
+                        <p className="text-xs text-chocolate-400 mt-1 truncate max-w-xl">{item.recipeText}</p>
+                      )}
+                      {item.dietaryTarget && (
+                        <span className="badge-warm mt-2">{item.dietaryTarget}</span>
+                      )}
+                      {item.type === "experiment" && item.confidence && (
+                        <span className="provenance-tag bg-cream-100 text-chocolate-500 border-cream-300 mt-2">
+                          {item.confidence} confidence
+                        </span>
+                      )}
+                      {item.type === "experiment" && item.modification && (
+                        <p className="text-xs text-caramel-700 font-medium mt-1 break-words">“{item.modification}”</p>
+                      )}
+                    </div>
+                    {item.createdAt?.seconds && (
+                      <span className="text-[10px] text-chocolate-300 font-mono shrink-0">
+                        {new Date(item.createdAt.seconds * 1000).toLocaleDateString()}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 pt-2 border-t border-cream-200">
+                    <button
+                      onClick={() => setSelectedReport(item)}
+                      className="btn-secondary text-xs"
+                    >
+                      View
+                    </button>
+                    {item.recipeText && (
+                      <Link
+                        to={`/whatif?base=${item.id}`}
+                        className="px-3 py-2 rounded-xl bg-saffron-100 hover:bg-saffron-200 border border-saffron-300 text-chocolate-800 font-semibold text-xs transition-all"
+                      >
+                        Run What-If on this
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => handleDelete(item)}
+                      className="px-3 py-2 rounded-xl bg-dustyrose-50 hover:bg-dustyrose-100 border border-dustyrose-200 text-dustyrose-600 font-semibold text-xs transition-all"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
-                {item.createdAt?.seconds && (
-                  <span className="text-[10px] text-chocolate-300 font-mono shrink-0">
-                    {new Date(item.createdAt.seconds * 1000).toLocaleDateString()}
-                  </span>
+
+                {/* Experiment children (versions of this base) */}
+                {children.length > 0 && (
+                  <div className="ml-5 sm:ml-8 mt-2 border-l-[3px] border-saffron-300 pl-4 space-y-2">
+                    <p className="text-[10px] font-mono uppercase tracking-wider text-chocolate-400">
+                      This base has {children.length} experiment iteration{children.length > 1 ? "s" : ""}
+                    </p>
+                    {children.map((child) => (
+                      <div key={child.id} className="p-4 rounded-xl bg-saffron-50 border border-saffron-300 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-chocolate-900 break-words">“{child.modification || child.name}”</p>
+                          <p className="text-[10px] font-mono text-chocolate-400 mt-0.5">
+                            {child.confidence || "unknown"} confidence
+                            {child.createdAt?.seconds ? ` · ${new Date(child.createdAt.seconds * 1000).toLocaleDateString()}` : ""}
+                          </p>
+                        </div>
+                        <div className="flex gap-2 shrink-0">
+                          <button onClick={() => setSelectedReport(child)} className="px-2.5 py-1.5 rounded-lg bg-white border border-saffron-300 text-chocolate-700 text-[11px] font-semibold hover:border-chocolate-900 transition-all">
+                            View
+                          </button>
+                          <Link to={`/whatif?base=${child.id}`} className="px-2.5 py-1.5 rounded-lg bg-white border border-saffron-300 text-chocolate-700 text-[11px] font-semibold hover:border-chocolate-900 transition-all">
+                            Iterate
+                          </Link>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
-
-              <div className="flex flex-wrap gap-2 pt-2 border-t border-cream-200">
-                <button
-                  onClick={() => setSelectedReport(item)}
-                  className="btn-secondary text-xs"
-                >
-                  View
-                </button>
-                <button
-                  onClick={() => handleDelete(item)}
-                  className="px-3 py-2 rounded-xl bg-dustyrose-50 hover:bg-dustyrose-100 border border-dustyrose-200 text-dustyrose-600 font-semibold text-xs transition-all"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
 

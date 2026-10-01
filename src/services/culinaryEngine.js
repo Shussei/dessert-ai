@@ -60,6 +60,10 @@ export async function reformulateRecipe(recipeText, dietaryTarget) {
   return apiRequest("/reformulate", { recipeText, dietaryTarget })
 }
 
+export async function runExperiment(recipeText, modification) {
+  return apiRequest("/experiment", { recipeText, modification })
+}
+
 export async function checkHealth() {
   try {
     const res = await fetch(`${API_BASE}/health`)

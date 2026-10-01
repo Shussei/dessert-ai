@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { Link } from "react-router-dom"
 import { evaluateDessertRecipe } from "../services/culinaryEngine"
 
 const EXAMPLE_A = `Dark Chocolate & Passion Fruit Entremet
@@ -98,6 +99,15 @@ export default function Compare() {
         <p className="section-subheading">
           Compare two formulations across structural design, sensory balance, and culinary reasoning
         </p>
+        <div className="mt-4 p-4 rounded-md bg-saffron-50 border-2 border-saffron-300 flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
+          <p className="text-xs text-chocolate-600">
+            <span className="font-bold text-chocolate-900">Looking for base vs modified?</span>{" "}
+            Run a what-if experiment to see how a single change shifts sensory balance and structure.
+          </p>
+          <Link to="/whatif" className="btn-primary text-xs shrink-0">
+            Open What-If Lab →
+          </Link>
+        </div>
       </div>
 
       {/* Error */}

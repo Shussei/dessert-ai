@@ -5,10 +5,15 @@ import { useAuth } from "../context/AuthContext"
 const NAV_LINKS = [
   { to: "/evaluator", label: "Evaluator" },
   { to: "/flavorlab", label: "Flavor Lab" },
+  { to: "/whatif", label: "What-If" },
   { to: "/reformulate", label: "Reformulate" },
   { to: "/compare", label: "Compare" },
   { to: "/generator", label: "Generator" },
   { to: "/library", label: "Library" },
+]
+
+const MOBILE_LINKS = [
+  ...NAV_LINKS,
   { to: "/about", label: "About" },
 ]
 
@@ -104,7 +109,7 @@ export default function Navbar() {
       {menuOpen && (
         <div className="md:hidden border-t-[3px] border-chocolate-900 bg-cream-50 animate-slide-down">
           <div className="max-w-7xl mx-auto px-4 py-3 grid grid-cols-1 gap-2">
-            {NAV_LINKS.map(({ to, label }) => (
+            {MOBILE_LINKS.map(({ to, label }) => (
               <Link
                 key={to}
                 to={to}

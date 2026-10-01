@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom"
+import { BrowserRouter, Routes, Route, Link } from "react-router-dom"
 import { AuthProvider } from "./context/AuthContext"
 
 import Navbar from "./components/Navbar"
@@ -8,6 +8,7 @@ import Evaluator from "./pages/Evaluator"
 import FlavorLab from "./pages/FlavorLab"
 import Reformulator from "./pages/Reformulator"
 import Compare from "./pages/Compare"
+import WhatIf from "./pages/WhatIf"
 import Generator from "./pages/Generator"
 import ExpoKiosk from "./pages/ExpoKiosk"
 import Library from "./pages/Library"
@@ -28,6 +29,7 @@ export default function App() {
               <Route path="/flavorlab" element={<FlavorLab />} />
               <Route path="/reformulate" element={<Reformulator />} />
               <Route path="/compare" element={<Compare />} />
+              <Route path="/whatif" element={<WhatIf />} />
               <Route path="/generator" element={<Generator />} />
               <Route path="/expo" element={<ExpoKiosk />} />
               <Route path="/library" element={<Library />} />
@@ -42,6 +44,10 @@ export default function App() {
                 © {new Date().getFullYear()} SavorSense — AI Culinary Intelligence
               </p>
               <div className="flex items-center gap-4 mt-3 sm:mt-0">
+                <Link to="/about" className="hover:text-chocolate-900 transition">
+                  About
+                </Link>
+                <span aria-hidden="true">●</span>
                 <span className="text-caramel-600">Culinary R&D Platform</span>
                 <span aria-hidden="true">●</span>
                 <a href="mailto:natalmadekkal.2005@gmail.com" className="hover:text-chocolate-900 transition">

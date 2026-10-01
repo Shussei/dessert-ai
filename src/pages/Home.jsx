@@ -4,18 +4,19 @@ const TICKER = [
   "SENSORY ANALYSIS",
   "STRUCTURAL BLUEPRINT",
   "FLAVOR PAIRING",
+  "WHAT-IF EXPERIMENTS",
+  "PREDICT · MODIFY · COMPARE · LEARN",
   "REFORMULATION",
-  "AI-ASSISTED REASONING",
+  "EXPERIMENTAL REASONING",
   "MUMENT 2026",
 ]
 
 const WORKFLOW = [
-  { step: "01", title: "Recipe", desc: "Ingredient composition and structure", tag: "INPUT" },
-  { step: "02", title: "Ingredient Intelligence", desc: "Classify roles and functions", tag: "MAP" },
-  { step: "03", title: "Flavor Relationships", desc: "Interactions and balance", tag: "WEIGH" },
-  { step: "04", title: "Dessert Architecture", desc: "Structural layering", tag: "BUILD" },
-  { step: "05", title: "Sensory Analysis", desc: "Dimensional profile", tag: "READ" },
-  { step: "06", title: "Recommendations", desc: "Optimization and reasoning", tag: "ACT" },
+  { step: "01", title: "Understand", desc: "Deconstruct a recipe: structure, sensory, ingredient roles — with confidence.", tag: "INPUT" },
+  { step: "02", title: "Predict", desc: "Ingredient-role rules ground the model before generative reasoning.", tag: "MAP" },
+  { step: "03", title: "Experiment", desc: "Propose a change; the system models its effects — and its risks.", tag: "TWEAK" },
+  { step: "04", title: "Compare", desc: "Base vs modified across sensory balance and structural design.", tag: "READ" },
+  { step: "05", title: "Learn", desc: "Record the iteration in your library and adapt from what it predicts.", tag: "LOOP" },
 ]
 
 const PRINCIPLES = [
@@ -70,15 +71,15 @@ export default function Home() {
             </h1>
             <p className="text-chocolate-500 text-base sm:text-lg max-w-lg leading-relaxed mb-8">
               A research tool for pastry professionals. SavorSense reads recipe structure,
-              sensory character, and ingredient interactions — and reports what it knows,
-              with what confidence, and where it is uncertain.
+              sensory character, and ingredient interactions — then runs what-if experiments
+              to predict how a change reshapes the result, with confidence and honesty.
             </p>
             <div className="flex flex-wrap items-center gap-4">
               <Link to="/evaluator" className="btn-primary px-7 py-3.5 text-base">
                 Analyze a Recipe →
               </Link>
-              <Link to="/generator" className="btn-secondary px-7 py-3.5 text-base">
-                Generate a Concept
+              <Link to="/whatif" className="btn-secondary px-7 py-3.5 text-base">
+                Run an Experiment
               </Link>
             </div>
           </div>
@@ -122,10 +123,10 @@ export default function Home() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
         <div className="flex items-end justify-between border-b-[3px] border-chocolate-900 pb-3 mb-8">
           <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-chocolate-900 tracking-tight">
-            From recipe to understanding
+            From understanding to experimentation
           </h2>
           <span className="font-mono text-[10px] text-chocolate-400 uppercase tracking-widest hidden sm:block">
-            06 stages
+            05 stages
           </span>
         </div>
         <ol className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -156,17 +157,18 @@ export default function Home() {
             A culinary R&amp;D workspace
           </h2>
           <span className="font-mono text-[10px] text-chocolate-400 uppercase tracking-widest hidden sm:block">
-            06 tools
+            07 tools
           </span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {[
-            { to: "/evaluator", n: "01", title: "Evaluator", desc: "Deconstruct a dessert: structure, sensory profile, ingredient roles, and recommendations." },
-            { to: "/flavorlab", n: "02", title: "Flavor Lab", desc: "Explore how two ingredients interact — compatibility, contrast, and culinary evidence." },
-            { to: "/reformulate", n: "03", title: "Reformulation", desc: "Adapt a recipe to vegan, gluten-free, or keto with responsible trade-off analysis." },
-            { to: "/compare", n: "04", title: "Comparison", desc: "Compare two formulations across sensory balance and structural design." },
-            { to: "/generator", n: "05", title: "Generator", desc: "Generate structured, technically responsible dessert concepts." },
-            { to: "/library", n: "06", title: "Research Library", desc: "Your personal notebook of analyses, recipes, and experiments." },
+            { to: "/evaluator", zone: "Understand", n: "01", title: "Evaluator", desc: "Deconstruct a dessert: structure, sensory profile, ingredient roles, and recommendations." },
+            { to: "/flavorlab", zone: "Understand", n: "02", title: "Flavor Lab", desc: "Explore how two ingredients interact — compatibility, contrast, and culinary evidence." },
+            { to: "/whatif", zone: "Experiment", n: "03", title: "What-If Lab", desc: "Propose a change to any recipe and see its predicted effects, risks, and compensation." },
+            { to: "/compare", zone: "Experiment", n: "04", title: "Comparison", desc: "Compare two formulations across sensory balance and structural design." },
+            { to: "/generator", zone: "Experiment", n: "05", title: "Generator", desc: "Generate structured, technically responsible dessert concepts." },
+            { to: "/reformulate", zone: "Adapt & Record", n: "06", title: "Reformulation", desc: "Adapt a recipe to vegan, gluten-free, or keto with responsible trade-off analysis." },
+            { to: "/library", zone: "Adapt & Record", n: "07", title: "Research Library", desc: "Your experiments and analyses, versioned base → iteration under one notebook." },
           ].map((f) => (
             <Link
               key={f.to}
@@ -174,7 +176,12 @@ export default function Home() {
               className="card-warm p-5 group flex flex-col gap-3 hover:-translate-x-1 hover:-translate-y-1 hover:bg-saffron-100 transition-all duration-150"
             >
               <div className="flex items-start justify-between">
-                <span className="font-mono text-[10px] text-chocolate-400 group-hover:text-chocolate-900 font-bold">{f.n}</span>
+                <div className="flex flex-col gap-1">
+                  <span className="font-mono text-[9px] font-bold uppercase tracking-widest text-caramel-600 group-hover:text-chocolate-900">
+                    {f.zone}
+                  </span>
+                  <span className="font-mono text-[10px] text-chocolate-400 group-hover:text-chocolate-900 font-bold">0{f.n}</span>
+                </div>
                 <span className="inline-flex items-center justify-center w-7 h-7 rounded-sm bg-chocolate-900 text-cream-100 group-hover:bg-saffron-400 group-hover:text-chocolate-900 transition-colors">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4-4 4M21 12H3" />
