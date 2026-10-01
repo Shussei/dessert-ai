@@ -65,7 +65,7 @@ export default function ExpoKiosk() {
         <div className="flex whitespace-nowrap animate-marquee">
           {[0, 1].map((n) => (
             <span key={n} className="flex shrink-0 items-center">
-              {["SENSORY ANALYSIS", "STRUCTURAL BLUEPRINT", "FLAVOR PAIRING", "ZERO FABRICATION", "MUMENT 2026"].map((t) => (
+              {["SENSORY ANALYSIS", "STRUCTURAL BLUEPRINT", "FLAVOR PAIRING", "ZERO FABRICATION", "WHAT-IF EXPERIMENTS"].map((t) => (
                 <span key={t + n} className="font-mono text-[11px] font-semibold uppercase tracking-[0.25em]">
                   {t}
                   <span className="mx-5 text-cream-100">●</span>
@@ -79,7 +79,7 @@ export default function ExpoKiosk() {
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <span className="badge-warm">Live Demonstration</span>
-          <span className="text-xs text-chocolate-400 font-mono">MUMENT 2026 Expo · Team NSSN</span>
+          <span className="text-xs text-chocolate-400 font-mono">SavorSense · Team NSSN</span>
         </div>
         <span className="px-3 py-1 rounded-sm bg-dustyrose-100 border-2 border-chocolate-900 text-dustyrose-600 text-[11px] font-bold uppercase tracking-wider">
           Demo Mode

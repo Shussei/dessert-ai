@@ -8,7 +8,6 @@ const TICKER = [
   "PREDICT · MODIFY · COMPARE · LEARN",
   "REFORMULATION",
   "EXPERIMENTAL REASONING",
-  "MUMENT 2026",
 ]
 
 const WORKFLOW = [
@@ -58,7 +57,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-8 items-center">
           <div className="animate-fade-in-up">
             <p className="font-mono text-[11px] text-saffron-600 font-bold uppercase tracking-[0.25em] mb-5">
-              — MUMENT 2026 · AI culinary reasoning —
+              — AI culinary reasoning —
             </p>
             <h1 className="font-display text-5xl sm:text-6xl xl:text-7xl font-extrabold text-chocolate-900 tracking-tight leading-[0.95] mb-6">
               Understand why

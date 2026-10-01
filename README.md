@@ -1,6 +1,6 @@
 # SavorSense — AI Culinary Experimentation Studio
 
-AI-powered culinary R&D platform for MUMENT 2026. SavorSense reads a dessert recipe,
+AI-powered culinary R&D platform. SavorSense reads a dessert recipe,
 deconstructs it into a grounded **Culinary Model** (structure, sensory, ingredient roles),
 then runs **what-if experiments** to predict how a change reshapes the result — with
 confidence labels and honest uncertainty instead of fake precision.

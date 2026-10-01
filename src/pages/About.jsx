@@ -157,18 +157,15 @@ export default function About() {
       </section>
 
       <section className="rounded-2xl bg-chocolate-900 p-8 sm:p-10">
-        <h2 className="font-display text-2xl font-bold text-cream-100 tracking-tight">Team &amp; Competition</h2>
+        <h2 className="font-display text-2xl font-bold text-cream-100 tracking-tight">Team</h2>
         <p className="mt-3 text-sm sm:text-base text-chocolate-200 leading-relaxed">
-          SavorSense is an entry in the MUMENT 2026 Innovation Expo, built by Team NSSN. The project combines classic
+          SavorSense is built by Team NSSN. The project combines classic
           pastry knowledge with a live AI inference pipeline to explore what an explainable culinary R&amp;D assistant
           could look like.
         </p>
         <div className="flex flex-wrap items-center gap-3 mt-6">
           <span className="px-3 py-1.5 rounded-full bg-caramel-100 border border-caramel-300 text-caramel-700 text-xs font-semibold">
             Team NSSN
-          </span>
-          <span className="px-3 py-1.5 rounded-full bg-cream-100 border border-cream-200 text-chocolate-700 text-xs font-semibold">
-            MUMENT 2026 Innovation Expo
           </span>
           <a
             href="mailto:natalmadekkal.2005@gmail.com"

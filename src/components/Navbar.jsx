@@ -46,7 +46,7 @@ export default function Navbar() {
                 SavorSense
               </span>
               <span className="text-[9px] text-chocolate-400 font-mono font-medium uppercase tracking-[0.2em] hidden lg:block">
-                MUMENT 2026
+                AI CULINARY LAB
               </span>
             </span>
           </Link>
