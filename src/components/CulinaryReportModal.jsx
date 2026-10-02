@@ -1,6 +1,16 @@
+import { useEffect } from "react"
 import PredictionRealityCard from "./PredictionRealityCard"
 
 export default function CulinaryReportModal({ isOpen, onClose, reportData }) {
+  useEffect(() => {
+    if (!isOpen) return
+    function onKey(e) {
+      if (e.key === "Escape") onClose()
+    }
+    document.addEventListener("keydown", onKey)
+    return () => document.removeEventListener("keydown", onKey)
+  }, [isOpen, onClose])
+
   if (!isOpen || !reportData) return null
 
   const handlePrint = () => {
@@ -28,8 +38,25 @@ export default function CulinaryReportModal({ isOpen, onClose, reportData }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-chocolate-900/50 backdrop-blur-sm overflow-y-auto animate-fade-in">
-      <div className="w-full max-w-3xl p-6 sm:p-8 rounded-3xl bg-cream-50 border border-cream-300 shadow-warm-xl relative my-8">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-chocolate-900/50 backdrop-blur-sm overflow-y-auto animate-fade-in"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Saved record"
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Close"
+        className="fixed top-4 right-4 z-[60] w-10 h-10 rounded-lg bg-cream-50 border-2 border-chocolate-900 text-chocolate-900 text-xl font-bold shadow-warm hover:bg-saffron-100 transition-colors flex items-center justify-center"
+      >
+        ✕
+      </button>
+      <div
+        className="w-full max-w-3xl p-6 sm:p-8 rounded-3xl bg-cream-50 border border-cream-300 shadow-warm-xl relative my-8"
+        onClick={(e) => e.stopPropagation()}
+      >
 
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-cream-300 mb-6 gap-4">
