@@ -311,7 +311,14 @@ export default function WhatIf() {
       setSaved(true)
     } catch (err) {
       console.error("Save experiment failed:", err)
-      setError("Could not save the experiment to your library.")
+      const code = err?.code || ""
+      setError(
+        code === "permission-denied"
+          ? "Firebase blocked this save (permission-denied). Check the Firestore rules for the library collection in the Firebase console."
+          : code === "unavailable"
+            ? "Firebase is temporarily unavailable. Try again in a moment."
+            : `Could not save the experiment to your library${code ? ` (${code})` : "."}`
+      )
     } finally {
       setSaving(false)
     }

@@ -9,6 +9,7 @@ export default function Library() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedReport, setSelectedReport] = useState(null)
+  const [fetchError, setFetchError] = useState("")
   const { user } = useAuth()
 
   useEffect(() => {
@@ -29,8 +30,15 @@ export default function Library() {
           return tb - ta
         })
         setItems(fetched)
+        setFetchError("")
       } catch (err) {
         console.error("Library fetch error:", err)
+        const code = err?.code || ""
+        setFetchError(
+          code === "permission-denied"
+            ? "Firebase blocked reading your library (permission-denied). Check the Firestore rules in the Firebase console."
+            : `Could not load your library${code ? ` (${code})` : "."}`
+        )
       }
       setLoading(false)
     }
@@ -125,6 +133,13 @@ export default function Library() {
           <Link to="/auth" className="btn-primary inline-flex">
             Sign In
           </Link>
+        </div>
+      )}
+
+      {/* Read error */}
+      {user && fetchError && (
+        <div className="p-4 rounded-2xl bg-dustyrose-50 border-2 border-dustyrose-200 text-sm text-dustyrose-700" role="alert">
+          {fetchError}
         </div>
       )}
 
